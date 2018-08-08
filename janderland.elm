@@ -51,7 +51,7 @@ import Dict
 import Maybe
 import Result
 import Navigation
-import List
+import Posts
 
 
 -- test data
@@ -117,9 +117,9 @@ init : Navigation.Location -> ( Model, Cmd Msg )
 init location =
     let
         page =
-            pageFromLocation testPosts location
+            pageFromLocation Posts.posts location
     in
-        ( Model testPosts page
+        ( Model Posts.posts page
         , Cmd.none
         )
 

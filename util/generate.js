@@ -1,4 +1,5 @@
 let handlebars = require('handlebars')
+let pretty = require('pretty-print')
 let promise = require('bluebird')
 let path = require('path')
 let fs = require('fs')
@@ -10,6 +11,7 @@ let {
     tail
 } = require('lodash')
 
+let writeFile = promise.promisify(fs.writeFile)
 let readFile = promise.promisify(fs.readFile)
 let readdir = promise.promisify(fs.readdir)
 
@@ -44,8 +46,7 @@ let parseMeta = (meta) =>
             metaKeys,
             captures(meta, metaRegExp)
         ),
-        'tags',
-        parseTags
+        'tags', parseTags
     )
 
 
@@ -58,8 +59,7 @@ let parseFile = (file) =>
             fileKeys,
             captures(file, /^(.*)---\n(.*)$/s)
         ),
-        fileKeys[0],
-        parseMeta
+        'meta', parseMeta
     )
 
 
@@ -73,7 +73,58 @@ let readFilesFromDir = (dir) =>
 
 
 
-readFilesFromDir('content').then((files) =>
-    console.log(files.map(parseFile))
-)
+const template = `
+module Posts exposing (posts)
+
+import Dict exposing (Dict)
+import Date exposing (Date)
+
+type alias Posts =
+    Dict Int Content
+
+type alias Content =
+    { id : Int
+    , name : String
+    , date : Date
+    , tags : List String
+    , body : String
+    }
+
+entry : Content -> ( Int, Content )
+entry content =
+    ( content.id, content)
+
+posts : Posts
+posts = [
+    {{#each posts}}
+    Content
+        {{@index}}
+        "{{this.meta.title}}"
+        (Date.fromTime 0)
+        [
+            {{#each this.meta.tags}}
+                "{{this}}"{{#unless @last}},{{/unless}}
+            {{/each}}
+        ]
+        "{{this.body}}"
+        {{#unless @last}},{{/unless}}
+    {{/each}}
+]
+|> List.map entry
+|> Dict.fromList
+`
+
+let generate = (parsedFiles) =>
+    handlebars.compile(template)({ posts: parsedFiles })
+
+
+
+readFilesFromDir('content').then((files) => {
+    let parsedFiles = files.map(parseFile)
+    console.log(parsedFiles)
+    writeFile(
+        'Posts.elm',
+        generate(parsedFiles)
+    )
+})
 
