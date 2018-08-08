@@ -27,10 +27,6 @@ import Html.Attributes
         , href
         , id
         )
-import Html.Events
-    exposing
-        ( onClick
-        )
 import Date
     exposing
         ( Date
@@ -51,9 +47,6 @@ import UrlParser as Url
 import Dict
     exposing
         ( Dict
-        , fromList
-        , values
-        , get
         )
 import Maybe
 import Result
@@ -71,33 +64,32 @@ testDate string =
     )
 
 
+contentEntry : Content -> ( Int, Content )
+contentEntry content =
+    ( content.id, content )
+
+
 testPosts : Dict Int Content
 testPosts =
-    fromList
-        [ ( 1
-          , Content
-                "MyPost"
-                1
-                (testDate "1991/02/23")
-                [ "tag1", "tag2" ]
-                "This is my post content"
-          )
-        , ( 2
-          , Content
-                "Another Post"
-                2
-                (testDate "2003/12/30")
-                [ "tag1", "tag3", "tag4" ]
-                "This is anothor post content"
-          )
-        , ( 3
-          , Content
-                "Ron Swanson"
-                3
-                (testDate "1987/01/01")
-                [ "tag4" ]
-                "Lot 47"
-          )
+    (Dict.fromList << List.map contentEntry)
+        [ Content
+            1
+            "MyPost"
+            (testDate "1991/02/23")
+            [ "tag1", "tag2" ]
+            "This is my post content"
+        , Content
+            2
+            "Another Post"
+            (testDate "2003/12/30")
+            [ "tag1", "tag3", "tag4" ]
+            "This is anothor post content"
+        , Content
+            3
+            "Ron Swanson"
+            (testDate "1987/01/01")
+            [ "tag4" ]
+            "Lot 47"
         ]
 
 
@@ -139,14 +131,6 @@ route =
         ]
 
 
-routeFromLocation : Navigation.Location -> Maybe Route
-routeFromLocation location =
-    if String.isEmpty location.hash then
-        Just HomeRoute
-    else
-        Url.parseHash route location
-
-
 
 -- update
 
@@ -158,8 +142,8 @@ type alias Model =
 
 
 type alias Content =
-    { name : String
-    , id : Int
+    { id : Int
+    , name : String
     , date : Date
     , tags : List String
     , body : String
@@ -184,7 +168,7 @@ pageFromRoute posts route =
             Home
 
         PostRoute id ->
-            get id posts
+            Dict.get id posts
                 |> Maybe.map Post
                 |> Maybe.withDefault NotFound
 
@@ -199,13 +183,23 @@ update msg model =
 
         UrlChange location ->
             let
+                maybeRoute =
+                    Url.parseHash route location
+
                 page =
-                    Url.parsePath route location
+                    maybeRoute
                         |> Maybe.map (pageFromRoute model.posts)
                         |> Maybe.withDefault NotFound
             in
                 ( { model | page = page }
-                , Cmd.none
+                , (case maybeRoute of
+                    Just theRoute ->
+                        routeToString theRoute
+
+                    Nothing ->
+                        "404"
+                  )
+                    |> Navigation.modifyUrl
                 )
 
 
@@ -256,14 +250,10 @@ routeToHref =
     href << routeToString
 
 
-
--- post list
-
-
 postExcerpt : String -> String
 postExcerpt =
-    (String.join " ")
-        << (List.take 20)
+    String.join " "
+        << List.take 20
         << String.words
 
 
@@ -294,10 +284,6 @@ postList posts =
     table [] (postBodies posts)
 
 
-
--- page home
-
-
 topBar : Html Msg
 topBar =
     div []
@@ -309,17 +295,13 @@ topBar =
 pageHome : Dict Int Content -> List (Html Msg)
 pageHome posts =
     [ topBar
-    , (posts |> values |> List.take 5 |> postList)
+    , (posts |> Dict.values |> List.take 5 |> postList)
     ]
-
-
-
--- page post
 
 
 pagePost : Content -> List (Html Msg)
 pagePost content =
-    [ button [ onClick (NewUrl "/") ] [ text "back" ]
+    [ button [ routeToHref HomeRoute ] [ text "back" ]
     , article []
         [ h1 [] [ text content.name ]
         , text content.body
