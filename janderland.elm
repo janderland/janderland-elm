@@ -57,40 +57,46 @@ import List
 -- test data
 
 
-testDate : String -> Date
-testDate string =
-    (Date.fromString string
-        |> Result.withDefault (Date.fromTime 0)
+parseDate : String -> Date
+parseDate string =
+    let
+        defaultDate =
+            Date.fromTime 0
+    in
+        Date.fromString string
+            |> Result.withDefault defaultDate
+
+
+contentToDictEntry : Content -> ( Int, Content )
+contentToDictEntry content =
+    ( content.id
+    , content
     )
-
-
-contentEntry : Content -> ( Int, Content )
-contentEntry content =
-    ( content.id, content )
 
 
 testPosts : Dict Int Content
 testPosts =
-    (Dict.fromList << List.map contentEntry)
-        [ Content
-            1
-            "MyPost"
-            (testDate "1991/02/23")
-            [ "tag1", "tag2" ]
-            "This is my post content"
-        , Content
-            2
-            "Another Post"
-            (testDate "2003/12/30")
-            [ "tag1", "tag3", "tag4" ]
-            "This is anothor post content"
-        , Content
-            3
-            "Ron Swanson"
-            (testDate "1987/01/01")
-            [ "tag4" ]
-            "Lot 47"
-        ]
+    [ Content
+        1
+        "MyPost"
+        (parseDate "1991/02/23")
+        [ "tag1", "tag2" ]
+        "This is my post content"
+    , Content
+        2
+        "Another Post"
+        (parseDate "2003/12/30")
+        [ "tag1", "tag3", "tag4" ]
+        "This is anothor post content"
+    , Content
+        3
+        "Ron Swanson"
+        (parseDate "1987/01/01")
+        [ "tag4" ]
+        "Lot 47"
+    ]
+        |> List.map contentToDictEntry
+        |> Dict.fromList
 
 
 
@@ -109,9 +115,16 @@ main =
 
 init : Navigation.Location -> ( Model, Cmd Msg )
 init location =
-    ( Model testPosts Home
-    , Cmd.none
-    )
+    let
+        testData =
+            testPosts
+
+        page =
+            pageFromLocation testData location
+    in
+        ( Model testData page
+        , Cmd.none
+        )
 
 
 
@@ -161,16 +174,25 @@ type Msg
     | UrlChange Navigation.Location
 
 
-pageFromRoute : Dict Int Content -> Route -> Page
-pageFromRoute posts route =
-    case route of
-        HomeRoute ->
-            Home
+pageFromLocation : Dict Int Content -> Navigation.Location -> Page
+pageFromLocation posts location =
+    let
+        maybeRoute =
+            Url.parseHash route location
+    in
+        maybeRoute
+            |> Maybe.map
+                (\theRoute ->
+                    case theRoute of
+                        HomeRoute ->
+                            Home
 
-        PostRoute id ->
-            Dict.get id posts
-                |> Maybe.map Post
-                |> Maybe.withDefault NotFound
+                        PostRoute id ->
+                            Dict.get id posts
+                                |> Maybe.map Post
+                                |> Maybe.withDefault NotFound
+                )
+            |> Maybe.withDefault NotFound
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -183,23 +205,11 @@ update msg model =
 
         UrlChange location ->
             let
-                maybeRoute =
-                    Url.parseHash route location
-
                 page =
-                    maybeRoute
-                        |> Maybe.map (pageFromRoute model.posts)
-                        |> Maybe.withDefault NotFound
+                    pageFromLocation model.posts location
             in
                 ( { model | page = page }
-                , (case maybeRoute of
-                    Just theRoute ->
-                        routeToString theRoute
-
-                    Nothing ->
-                        "404"
-                  )
-                    |> Navigation.modifyUrl
+                , Cmd.none
                 )
 
 
@@ -231,8 +241,8 @@ view { posts, page } =
         )
 
 
-routeToString : Route -> String
-routeToString route =
+stringFromRoute : Route -> String
+stringFromRoute route =
     let
         pieces =
             case route of
@@ -245,9 +255,9 @@ routeToString route =
         "#/" ++ String.join "/" pieces
 
 
-routeToHref : Route -> Html.Attribute Msg
-routeToHref =
-    href << routeToString
+hrefFromRoute : Route -> Html.Attribute Msg
+hrefFromRoute =
+    href << stringFromRoute
 
 
 postExcerpt : String -> String
@@ -268,7 +278,7 @@ postBodies posts =
                         , div [] [ text (format "%Y" content.date) ]
                         ]
                     , td []
-                        [ a [ content.id |> PostRoute |> routeToHref ]
+                        [ a [ content.id |> PostRoute |> hrefFromRoute ]
                             [ text content.name ]
                         ]
                     , td []
@@ -287,7 +297,7 @@ postList posts =
 topBar : Html Msg
 topBar =
     div []
-        [ h1 [] [ text "JanderLand" ]
+        [ h1 [] [ text "janderland" ]
         , input [ type_ "search", placeholder "search all" ] []
         ]
 
@@ -301,7 +311,7 @@ pageHome posts =
 
 pagePost : Content -> List (Html Msg)
 pagePost content =
-    [ button [ routeToHref HomeRoute ] [ text "back" ]
+    [ a [ hrefFromRoute HomeRoute ] [ text "back" ]
     , article []
         [ h1 [] [ text content.name ]
         , text content.body
