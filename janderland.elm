@@ -74,7 +74,7 @@ contentToDictEntry content =
     )
 
 
-testPosts : Dict Int Content
+testPosts : Posts
 testPosts =
     [ Content
         1
@@ -116,13 +116,10 @@ main =
 init : Navigation.Location -> ( Model, Cmd Msg )
 init location =
     let
-        testData =
-            testPosts
-
         page =
-            pageFromLocation testData location
+            pageFromLocation testPosts location
     in
-        ( Model testData page
+        ( Model testPosts page
         , Cmd.none
         )
 
@@ -144,14 +141,39 @@ route =
         ]
 
 
+stringFromRoute : Route -> String
+stringFromRoute route =
+    let
+        pieces =
+            case route of
+                HomeRoute ->
+                    []
+
+                PostRoute id ->
+                    [ "post", toString id ]
+    in
+        "#/" ++ String.join "/" pieces
+
+
+type Page
+    = Home
+    | Post Content
+    | NotFound
+
+
+maybePageFromRoute : Posts -> Route -> Maybe Page
+maybePageFromRoute posts theRoute =
+    case theRoute of
+        HomeRoute ->
+            Just Home
+
+        PostRoute id ->
+            Dict.get id posts
+                |> Maybe.map Post
+
+
 
 -- update
-
-
-type alias Model =
-    { posts : Dict Int Content
-    , page : Page
-    }
 
 
 type alias Content =
@@ -163,10 +185,14 @@ type alias Content =
     }
 
 
-type Page
-    = Home
-    | NotFound
-    | Post Content
+type alias Posts =
+    Dict Int Content
+
+
+type alias Model =
+    { posts : Posts
+    , page : Page
+    }
 
 
 type Msg
@@ -174,24 +200,17 @@ type Msg
     | UrlChange Navigation.Location
 
 
-pageFromLocation : Dict Int Content -> Navigation.Location -> Page
+pageFromLocation : Posts -> Navigation.Location -> Page
 pageFromLocation posts location =
     let
         maybeRoute =
             Url.parseHash route location
-    in
-        maybeRoute
-            |> Maybe.map
-                (\theRoute ->
-                    case theRoute of
-                        HomeRoute ->
-                            Home
 
-                        PostRoute id ->
-                            Dict.get id posts
-                                |> Maybe.map Post
-                                |> Maybe.withDefault NotFound
-                )
+        maybePage =
+            maybeRoute
+                |> Maybe.andThen (maybePageFromRoute posts)
+    in
+        maybePage
             |> Maybe.withDefault NotFound
 
 
@@ -228,70 +247,80 @@ subscriptions model =
 
 view : Model -> Html Msg
 view { posts, page } =
-    div []
-        (case page of
-            Home ->
-                pageHome posts
-
-            NotFound ->
-                [ h1 [] [ text "Not Found" ] ]
-
-            Post content ->
-                pagePost content
-        )
-
-
-stringFromRoute : Route -> String
-stringFromRoute route =
     let
-        pieces =
-            case route of
-                HomeRoute ->
-                    []
+        children =
+            case page of
+                Home ->
+                    viewHome posts
 
-                PostRoute id ->
-                    [ "post", toString id ]
+                Post content ->
+                    viewPost content
+
+                NotFound ->
+                    viewNotFound
     in
-        "#/" ++ String.join "/" pieces
+        div [] children
+
+
+viewHome : Posts -> List (Html Msg)
+viewHome posts =
+    [ topBar
+    , posts
+        |> Dict.values
+        |> List.take 5
+        |> postTable
+    ]
+
+
+viewPost : Content -> List (Html Msg)
+viewPost content =
+    [ a [ hrefFromRoute HomeRoute ] [ text "back" ]
+    , article []
+        [ h1 [] [ text content.name ]
+        , text content.body
+        ]
+    ]
+
+
+viewNotFound : List (Html Msg)
+viewNotFound =
+    [ h1 [] [ text "Not Found" ] ]
 
 
 hrefFromRoute : Route -> Html.Attribute Msg
 hrefFromRoute =
-    href << stringFromRoute
+    stringFromRoute
+        >> href
 
 
 postExcerpt : String -> String
 postExcerpt =
-    String.join " "
-        << List.take 20
-        << String.words
+    String.words
+        >> List.take 20
+        >> String.join " "
 
 
-postBodies : List Content -> List (Html Msg)
-postBodies posts =
-    List.map
-        (\content ->
-            tbody []
-                [ tr []
-                    [ td [ rowspan 2 ]
-                        [ div [] [ text (format "%b %d" content.date) ]
-                        , div [] [ text (format "%Y" content.date) ]
-                        ]
-                    , td []
-                        [ a [ content.id |> PostRoute |> hrefFromRoute ]
-                            [ text content.name ]
-                        ]
-                    , td []
-                        [ text (postExcerpt content.body ++ "...") ]
-                    ]
+tableBodyFromPost : Content -> Html Msg
+tableBodyFromPost post =
+    tbody []
+        [ tr []
+            [ td [ rowspan 2 ]
+                [ div [] [ text (format "%b %d" post.date) ]
+                , div [] [ text (format "%Y" post.date) ]
                 ]
-        )
-        posts
+            , td []
+                [ a [ post.id |> PostRoute |> hrefFromRoute ]
+                    [ text post.name ]
+                ]
+            , td []
+                [ text (postExcerpt post.body ++ "...") ]
+            ]
+        ]
 
 
-postList : List Content -> Html Msg
-postList posts =
-    table [] (postBodies posts)
+postTable : List Content -> Html Msg
+postTable posts =
+    table [] (List.map tableBodyFromPost posts)
 
 
 topBar : Html Msg
@@ -300,20 +329,3 @@ topBar =
         [ h1 [] [ text "janderland" ]
         , input [ type_ "search", placeholder "search all" ] []
         ]
-
-
-pageHome : Dict Int Content -> List (Html Msg)
-pageHome posts =
-    [ topBar
-    , (posts |> Dict.values |> List.take 5 |> postList)
-    ]
-
-
-pagePost : Content -> List (Html Msg)
-pagePost content =
-    [ a [ hrefFromRoute HomeRoute ] [ text "back" ]
-    , article []
-        [ h1 [] [ text content.name ]
-        , text content.body
-        ]
-    ]
