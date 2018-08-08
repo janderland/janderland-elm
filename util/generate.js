@@ -109,9 +109,9 @@ posts = [
         "{{this.body}}"
         {{#unless @last}},{{/unless}}
     {{/each}}
-]
-|> List.map entry
-|> Dict.fromList
+    ]
+        |> List.map entry
+        |> Dict.fromList
 `
 
 let generate = (parsedFiles) =>
