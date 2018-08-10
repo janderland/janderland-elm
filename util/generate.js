@@ -1,5 +1,6 @@
 let exec = require('child_process').execFile
 let handlebars = require('handlebars')
+let format = require('string-format')
 let promise = require('bluebird')
 let path = require('path')
 let fs = require('fs')
@@ -7,7 +8,9 @@ let fs = require('fs')
 let {
     zipObject,
     isEmpty,
+    reduce,
     update,
+    range,
     tail
 } = require('lodash')
 
@@ -17,22 +20,37 @@ let readdir = promise.promisify(fs.readdir)
 
 
 
-// Utilities
+/*
+ * Utilities
+ */
 
 
+
+// TODO: This comment is outdate...
+// Feeds `stdin` to the process's stdin pipe,
+// closes said pipe, and returns a promise
+// for an object with the following
+// structure...
+//
+//     { exitCode: Int, stdout: String }
+//
+// ...where the exitCode and stdout values
+// originate from `process`.
 
 let promiseFromProcess = (process, stdin) => {
-    let stdout
+    let stdout = ''
     return new Promise((resolve, reject) => {
         process.addListener('error', reject)
         process.addListener('exit', (exitCode) =>
-            resolve({
-                exitCode: exitCode,
-                stdout: stdout
-            })
+            exitCode == 0
+                ? resolve(stdout)
+                : reject({
+                    exitCode: exitCode,
+                    stdout: stdout
+                })
         )
         process.stdout.on('data', (data) =>
-            stdout = data
+            stdout = stdout + data
         )
         process.stdin.write(stdin)
         process.stdin.end()
@@ -40,6 +58,10 @@ let promiseFromProcess = (process, stdin) => {
 }
 
 
+
+// Returns a promise for the array of file content
+// strings (UTF-8 is assumed) of every file that's
+// an immediate child of `dir`.
 
 let readFilesFromDir = (dir) =>
     readdir(dir).then((fileNames) =>
@@ -49,6 +71,19 @@ let readFilesFromDir = (dir) =>
     )
 
 
+
+// This helper function allows me to throw
+// from within a ternary operator.
+
+let throwErr = (message) =>
+    (() => { throw message })()
+
+
+
+// This `fulfilledHandler` logs a message
+// and then passes the promise's `value`
+// on to the next `then()` call.
+
 let log = (message) => (value) => {
         console.log(message)
         return value
@@ -56,17 +91,80 @@ let log = (message) => (value) => {
 
 
 
-// Content Parser
+// This `fulfilledHandler` logs the
+// promise's `value` and then passes
+// the value on to the next `then()`
+// call.
+
+let logValue = (value) => {
+        console.log(value)
+        return value
+    }
 
 
 
-const fileKeys = ['meta', 'body']
+// Returns a string of `count` number
+// of spaces.
+
+let spaces = (count) =>
+    reduce(range(count),
+        (acc) => acc + ' ',
+    '')
+
+
+
+// Mutates `string` so that `tab` is
+// prepended to each line.
+
+let indentLines = (string, tab) =>
+    reduce(string.split('\n'),
+        (acc, s) => acc + tab + s + '\n',
+    '')
+
+
+
+/*
+ * Content Parser
+ */
+
+
+
+const missingCaptureMsg = `
+Missing capture {}
+
+in string...
+{}
+
+with regex...
+{}
+`
+
+let missingCapture = (file, index, regex) =>
+    throwErr(format(
+        missingCaptureMsg,
+        index,
+        indentLines(file, spaces(4)),
+        spaces(4) + regex
+    ))
+
+
+let fromCaptures = (file, names, regex) =>
+    ((object, names) => {
+        names.forEach((name, index) => {
+            object[name] ||
+                missingCapture(file, index, regex)
+        })
+        return object
+    })(zipObject(names, captures(file, regex)), names)
+
+
 
 let parseFile = (file) =>
     update(
-        zipObject(
-            fileKeys,
-            captures(file, /^(.*)---\n(.*)$/s)
+        fromCaptures(
+            file,
+            ['meta', 'body'],
+            /^(.*)---\n(.*)$/s
         ),
         'meta',
         parseMeta
@@ -74,33 +172,27 @@ let parseFile = (file) =>
 
 
 
-const metaKeys = ['title', 'date', 'tags']
-
 let parseMeta = (meta) =>
     update(
-        zipObject(
-            metaKeys,
-            captures(meta, metaRegExp)
+        fromCaptures(
+            meta,
+            ['title', 'date', 'tags'],
+            /^# ([^\n]+)\n\s*([^\n]+)\n\s*(-.+)$/s
         ),
         'tags',
         parseTags
     )
 
-let metaRegExp =
-    new RegExp('^' +
-        metaKeys.reduce((expr, key) =>
-            expr + key + ':(.*)\n', ''
-        ) + '$',
-        's'
-    )
-
 
 
 let parseTags = (tags) =>
-    tags.replace(/\s+/g, ' ')
-        .split('-')
-        .map((s) => s.trim())
-        .filter((s) => !isEmpty(s))
+    isEmpty(tags)
+        ? throwErr('Content tags must '+
+            'have at least one item')
+        : tags.replace(/\s+/g, ' ')
+              .split('-')
+              .map((s) => s.trim())
+              .filter((s) => !isEmpty(s))
 
 
 
@@ -109,7 +201,9 @@ let captures = (string, regex) =>
 
 
 
-// Elm Generator
+/*
+ * Generate Elm
+ */
 
 
 
@@ -139,14 +233,14 @@ posts = [
     {{#each posts}}
     Content
         {{@index}}
-        '{{this.meta.title}}'
+        "{{this.meta.title}}"
         (Date.fromTime 0)
         [
             {{#each this.meta.tags}}
-                '{{this}}'{{#unless @last}},{{/unless}}
+                "{{this}}"{{#unless @last}},{{/unless}}
             {{/each}}
         ]
-        '{{this.body}}'
+        "{{this.body}}"
         {{#unless @last}},{{/unless}}
     {{/each}}
     ]
@@ -154,16 +248,18 @@ posts = [
         |> Dict.fromList
 `
 
-let generate = (parsedFiles) =>
+let generateElm = (parsedFiles) =>
     handlebars.compile(template)({ posts: parsedFiles })
 
 
 
-// Elm Formatting
+/*
+ * Format Elm
+ */
 
 
 
-let format = (generatedElm) =>
+let formatElm = (generatedElm) =>
     promiseFromProcess(
         exec('elm-format', [ '--stdin' ]),
         generatedElm
@@ -171,16 +267,20 @@ let format = (generatedElm) =>
 
 
 
-// Write File
+/*
+ * Write Elm
+ */
 
 
 
-let write = (result) =>
-    writeFile('Posts.elm', result.stdout)
+let writeElm = (elm) =>
+    writeFile('Posts.elm', elm)
 
 
 
-// Execution Root
+/*
+ * Execution Root
+ */
 
 
 
@@ -190,11 +290,11 @@ readFilesFromDir('content')
     .map(parseFile)
 
     .then(log('generating elm'))
-    .then(generate)
+    .then(generateElm)
 
     .then(log('formatting elm'))
-    .then(format)
+    .then(formatElm)
 
     .then(log('writing file'))
-    .then(write)
+    .then(writeElm)
 

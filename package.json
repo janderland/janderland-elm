@@ -1,9 +1,9 @@
 {
-  "name": "janderland-elm",
+  "name": "janderland",
   "version": "1.0.0",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "gen": "node util/generate.js"
+    "build": "node util/generate.js && elm-make janderland.elm"
   },
   "repository": {
     "type": "git",
@@ -14,8 +14,9 @@
   },
   "homepage": "https://github.com/janderland/janderland-elm#readme",
   "dependencies": {
-    "handlebars": "^4.0.11",
     "bluebird": "^3.5.1",
-    "lodash": "^4.17.10"
+    "handlebars": "^4.0.11",
+    "lodash": "^4.17.10",
+    "string-format": "^2.0.0"
   }
 }

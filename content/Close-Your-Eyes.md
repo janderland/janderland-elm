@@ -1,10 +1,12 @@
-title: Close Your Eyes
-date: 2016-04-26 11:52:55
-tags:
+# Close Your Eyes
+
+2016-04-26 11:52:55
+
 - word
 - deep
 - dream
 - mary
+
 ---
 
 <p>Have you ever fallen asleep in a cold room? <!-- more --> And said &#147;good night!&#148; to the dark? And melted into your bed spread? Silent in thought? Only hearing your collapsing lungs?</p>
