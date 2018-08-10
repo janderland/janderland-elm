@@ -139,14 +139,14 @@ posts = [
     {{#each posts}}
     Content
         {{@index}}
-        "{{this.meta.title}}"
+        '{{this.meta.title}}'
         (Date.fromTime 0)
         [
             {{#each this.meta.tags}}
-                "{{this}}"{{#unless @last}},{{/unless}}
+                '{{this}}'{{#unless @last}},{{/unless}}
             {{/each}}
         ]
-        "{{this.body}}"
+        '{{this.body}}'
         {{#unless @last}},{{/unless}}
     {{/each}}
     ]
@@ -186,15 +186,15 @@ let write = (result) =>
 
 readFilesFromDir('content')
 
-    .then(log("parsing content"))
+    .then(log('parsing content'))
     .map(parseFile)
 
-    .then(log("generating elm"))
+    .then(log('generating elm'))
     .then(generate)
 
-    .then(log("formatting elm"))
+    .then(log('formatting elm'))
     .then(format)
 
-    .then(log("writing file"))
+    .then(log('writing file'))
     .then(write)
 
