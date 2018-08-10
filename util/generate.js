@@ -1,4 +1,4 @@
-var exec = require('child_process').execFile
+let exec = require('child_process').execFile
 let handlebars = require('handlebars')
 let promise = require('bluebird')
 let path = require('path')
