@@ -1,5 +1,5 @@
+var exec = require('child_process').execFile
 let handlebars = require('handlebars')
-let pretty = require('pretty-print')
 let promise = require('bluebird')
 let path = require('path')
 let fs = require('fs')
@@ -17,37 +17,46 @@ let readdir = promise.promisify(fs.readdir)
 
 
 
-let captures = (string, regex) =>
-    tail(string.match(regex))
+// Utilities
 
 
 
-let parseTags = (tags) =>
-    tags.replace(/\s+/g, ' ')
-        .split('-')
-        .map((s) => s.trim())
-        .filter((s) => !isEmpty(s))
+let promiseFromProcess = (process, stdin) => {
+    let stdout
+    return new Promise((resolve, reject) => {
+        process.addListener('error', reject)
+        process.addListener('exit', (exitCode) =>
+            resolve({
+                exitCode: exitCode,
+                stdout: stdout
+            })
+        )
+        process.stdout.on('data', (data) =>
+            stdout = data
+        )
+        process.stdin.write(stdin)
+        process.stdin.end()
+    })
+}
 
 
 
-const metaKeys = ['title', 'date', 'tags']
-
-let metaRegExp =
-    new RegExp('^' +
-        metaKeys.reduce((expr, key) =>
-            expr + key + ':(.*)\n', ''
-        ) + '$',
-        's'
+let readFilesFromDir = (dir) =>
+    readdir(dir).then((fileNames) =>
+        promise.all(fileNames.map((fileName) =>
+            readFile(path.join(dir, fileName), 'utf8')
+        ))
     )
 
-let parseMeta = (meta) =>
-    update(
-        zipObject(
-            metaKeys,
-            captures(meta, metaRegExp)
-        ),
-        'tags', parseTags
-    )
+
+let log = (message) => (value) => {
+        console.log(message)
+        return value
+    }
+
+
+
+// Content Parser
 
 
 
@@ -59,17 +68,48 @@ let parseFile = (file) =>
             fileKeys,
             captures(file, /^(.*)---\n(.*)$/s)
         ),
-        'meta', parseMeta
+        'meta',
+        parseMeta
     )
 
 
 
-let readFilesFromDir = (dir) =>
-    readdir(dir).then((fileNames) =>
-        promise.all(fileNames.map((fileName) =>
-            readFile(path.join(dir, fileName), 'utf8')
-        ))
+const metaKeys = ['title', 'date', 'tags']
+
+let parseMeta = (meta) =>
+    update(
+        zipObject(
+            metaKeys,
+            captures(meta, metaRegExp)
+        ),
+        'tags',
+        parseTags
     )
+
+let metaRegExp =
+    new RegExp('^' +
+        metaKeys.reduce((expr, key) =>
+            expr + key + ':(.*)\n', ''
+        ) + '$',
+        's'
+    )
+
+
+
+let parseTags = (tags) =>
+    tags.replace(/\s+/g, ' ')
+        .split('-')
+        .map((s) => s.trim())
+        .filter((s) => !isEmpty(s))
+
+
+
+let captures = (string, regex) =>
+    tail(string.match(regex))
+
+
+
+// Elm Generator
 
 
 
@@ -119,12 +159,42 @@ let generate = (parsedFiles) =>
 
 
 
-readFilesFromDir('content').then((files) => {
-    let parsedFiles = files.map(parseFile)
-    console.log(parsedFiles)
-    writeFile(
-        'Posts.elm',
-        generate(parsedFiles)
+// Elm Formatting
+
+
+
+let format = (generatedElm) =>
+    promiseFromProcess(
+        exec('elm-format', [ '--stdin' ]),
+        generatedElm
     )
-})
+
+
+
+// Write File
+
+
+
+let write = (result) =>
+    writeFile('Posts.elm', result.stdout)
+
+
+
+// Execution Root
+
+
+
+readFilesFromDir('content')
+
+    .then(log("parsing content"))
+    .map(parseFile)
+
+    .then(log("generating elm"))
+    .then(generate)
+
+    .then(log("formatting elm"))
+    .then(format)
+
+    .then(log("writing file"))
+    .then(write)
 
