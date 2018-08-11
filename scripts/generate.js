@@ -310,9 +310,9 @@ let promiseFromProcess = (process, stdin) => {
 
 
 
-let writeElm = (elm) =>
-    mkdirp('build').then(() =>
-        writeFile('build/Posts.elm', elm)
+let writeElm = (file) => (elm) =>
+    mkdirp(path.dirname(file)).then(() =>
+        writeFile(file, elm)
     )
 
 
@@ -323,7 +323,21 @@ let writeElm = (elm) =>
 
 
 
-readFilesFromDir('content')
+let getEnvVar = (name) =>
+    process.env[name] || throwErr(
+        'Missing environment variable "' + name + '"'
+    )
+
+
+
+let build = getEnvVar('JANDER_BUILD')
+let posts = getEnvVar('JANDER_POSTS')
+let content = getEnvVar('JANDER_CONTENT')
+let outfile = path.join(build, posts)
+
+
+
+readFilesFromDir(content)
 
     .then(log('parsing content'))
     .map(parseFile)
@@ -335,7 +349,7 @@ readFilesFromDir('content')
     .then(formatElm)
 
     .then(log('writing file'))
-    .then(writeElm)
+    .then(writeElm(outfile))
 
     .catch((err) => {
         console.error(err)

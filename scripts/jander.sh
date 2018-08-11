@@ -3,6 +3,9 @@
 TASKS=( "link"  "generate" "compile" )
 
 
+source scripts/loadConfig.sh
+
+
 for TASK in "${TASKS[@]}"
 do
     # Print task name in uppercase

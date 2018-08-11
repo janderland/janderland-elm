@@ -1,16 +1,43 @@
 #!/usr/bin/env bash
 
 
-DEST="build"
-ORIG="source"
+
+# Set the nullglob to make wildcards the
+# match nothing result in an empty string
+shopt -s nullglob
+
+
+
+DEST=$JANDER_BUILD
+ORIG=$JANDER_SOURCE
 FILES=( ${ORIG}/* )
+
+
+
+# Crash if $ORIG dir doesn't exist
+
+if ! [ -e $ORIG ]
+then
+    echo "Source dir \"$ORIG\" doesn't exist"
+    exit 1
+fi
+
+
+
+# Exit if there's nothing to link
+
+if [ ${#FILES[@]} -eq 0 ]
+then
+    echo "No files to link"
+    exit 0
+fi
 
 
 
 # Create $DEST dir
 
 if ! mkdir -p $DEST
-then 
+then
     echo "Failed to create dir \"$DEST\""
     exit 1
 fi

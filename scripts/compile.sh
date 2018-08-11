@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
 
-elm-make build/janderland.elm \
-    --output build/janderland.html
+MAIN=$JANDER_MAIN
+BUILD=$JANDER_BUILD
+
+elm-make ${BUILD}/${MAIN} \
+    --output ${BUILD}/${MAIN%.*}.html
