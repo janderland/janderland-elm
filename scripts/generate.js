@@ -339,16 +339,16 @@ let outfile = path.join(build, posts)
 
 readFilesFromDir(content)
 
-    .then(log('parsing content'))
+    .then(log('Parsing content'))
     .map(parseFile)
 
-    .then(log('generating elm'))
+    .then(log('Generating elm'))
     .then(generateElm)
 
-    .then(log('formatting elm'))
+    .then(log('Formatting elm'))
     .then(formatElm)
 
-    .then(log('writing file'))
+    .then(log('Writing file'))
     .then(writeElm(outfile))
 
     .catch((err) => {

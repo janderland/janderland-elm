@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
 
-source scripts/loadConfig.sh
+source scripts/loadcfg.sh
 
 rm -rf $JANDER_BUILD

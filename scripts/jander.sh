@@ -3,7 +3,7 @@
 TASKS=( "link"  "generate" "compile" )
 
 
-source scripts/loadConfig.sh
+source scripts/loadcfg.sh
 
 
 for TASK in "${TASKS[@]}"

@@ -1,8 +1,6 @@
 #!/usr/bin/env bash
 
-
-
-# Set the nullglob to make wildcards the
+# Set the nullglob to make wildcards that
 # match nothing result in an empty string
 shopt -s nullglob
 
@@ -55,8 +53,9 @@ cd $DEST
 
 for FILE in ${FILES[@]}
 do
-    rm -f $(basename $FILE)
-    if ! ln -s ../${FILE} $(basename $FILE)
+    LINK=$(basename $FILE)
+    rm -f $LINK
+    if ! ln -s ../${FILE} $LINK
     then
         echo "Failed to link \"$FILE\""
         exit 1

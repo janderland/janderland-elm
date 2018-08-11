@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
-CONFIG=scripts/config.env
+
+CONFIG=config.env
 
 
 if [ -e $CONFIG ]
