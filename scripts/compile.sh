@@ -1,4 +1,4 @@
-elm-make \
-    build/Posts.elm \
-    source/janderland.elm \
+#!/usr/bin/env bash
+
+elm-make build/janderland.elm \
     --output build/janderland.html

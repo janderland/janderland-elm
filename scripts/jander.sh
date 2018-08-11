@@ -1,16 +1,21 @@
 #!/usr/bin/env bash
 
-TASKS=( "generate" "compile" )
+TASKS=( "link"  "generate" "compile" )
+
 
 for TASK in "${TASKS[@]}"
 do
+    # Print task name in uppercase
     echo $TASK | awk '{print toupper($0)}'
 
+    # Run task script
     scripts/${TASK}.*
     CODE=$?
 
     echo
 
+    # If task failed, exit with the task's
+    # exit code.
     if [ $CODE -ne 0 ]
     then
         exit $CODE
