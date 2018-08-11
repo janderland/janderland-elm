@@ -2,6 +2,7 @@
 
 let exec = require('child_process').execFile
 let handlebars = require('handlebars')
+let mkdirp = require('mkdirp-promise')
 let format = require('string-format')
 let promise = require('bluebird')
 let path = require('path')
@@ -310,7 +311,9 @@ let promiseFromProcess = (process, stdin) => {
 
 
 let writeElm = (elm) =>
-    writeFile('Posts.elm', elm)
+    mkdirp('build').then(() =>
+        writeFile('build/Posts.elm', elm)
+    )
 
 
 
