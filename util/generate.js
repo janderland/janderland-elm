@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 let exec = require('child_process').execFile
 let handlebars = require('handlebars')
 let format = require('string-format')
@@ -148,10 +150,10 @@ const captureErrMsg = `
 Missing capture {}
 
 in string...
-{}
+    {}
 
 with regex...
-{}
+    {}
 `
 
 
@@ -163,13 +165,13 @@ let captureErr = (file, index, regex) =>
     throwErr(format(
         captureErrMsg,
         index,
-        indentLines(file, spaces(4)),
-        spaces(4) + regex
+        indentLines(file, spaces(4)).trim(),
+        regex
     ))
 
 
 
-// Creates an object with the captures obtained from applying 
+// Creates an object with the captures obtained from applying
 // `regex to `string`. The captures are added as values to the
 // object using the `names` list as the keys. If there aren't
 // enough captures for the names provided, an error is thrown.
@@ -271,15 +273,13 @@ let formatElm = (generatedElm) =>
 
 // Feeds `stdin` to the process's stdin pipe,
 // closes said pipe, and returns a promise
-// for the stdout of the exited process.
-// The `rejectedHandler' recieves an
-// object with the following
+// for the stdout of the exited process. The
+// promise is resolved if the process's exit
+// code is 0. Otherwise, `rejectedHandler'
+// recieves an object with the following
 // structure...
 //
 //     { exitCode: Int, stdout: String }
-//
-// ...where the exitCode and stdout values
-// originate from `process`.
 
 let promiseFromProcess = (process, stdin) => {
     let stdout = ''
@@ -333,4 +333,9 @@ readFilesFromDir('content')
 
     .then(log('writing file'))
     .then(writeElm)
+
+    .catch((err) => {
+        console.error(err)
+        process.exitCode = 1
+    })
 
