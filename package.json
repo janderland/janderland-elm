@@ -4,7 +4,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "jander": "scripts/jander.sh",
-    "clean" : "scripts/clean.sh"
+    "clean": "scripts/clean.sh"
   },
   "repository": {
     "type": "git",
@@ -16,7 +16,7 @@
   "homepage": "https://github.com/janderland/janderland-elm#readme",
   "dependencies": {
     "bluebird": "^3.5.1",
-    "elm": "^0.18.0",
+    "elm": "^1.4.1",
     "elm-format": "^0.6.1-alpha",
     "handlebars": "^4.0.11",
     "lodash": "^4.17.10",
