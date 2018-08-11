@@ -10,6 +10,7 @@ let {
     isEmpty,
     reduce,
     update,
+    every,
     range,
     tail
 } = require('lodash')
@@ -23,40 +24,6 @@ let readdir = promise.promisify(fs.readdir)
 /*
  * Utilities
  */
-
-
-
-// Feeds `stdin` to the process's stdin pipe,
-// closes said pipe, and returns a promise
-// for the stdout of the exited process.
-// The `rejectedHandler' recieves an
-// object with the following
-// structure...
-//
-//     { exitCode: Int, stdout: String }
-//
-// ...where the exitCode and stdout values
-// originate from `process`.
-
-let promiseFromProcess = (process, stdin) => {
-    let stdout = ''
-    return new Promise((resolve, reject) => {
-        process.addListener('error', reject)
-        process.addListener('exit', (exitCode) =>
-            exitCode == 0
-                ? resolve(stdout)
-                : reject({
-                    exitCode: exitCode,
-                    stdout: stdout
-                })
-        )
-        process.stdout.on('data', (data) =>
-            stdout = stdout + data
-        )
-        process.stdin.write(stdin)
-        process.stdin.end()
-    })
-}
 
 
 
@@ -86,9 +53,9 @@ let throwErr = (message) =>
 // on to the next `then()` call.
 
 let log = (message) => (value) => {
-        console.log(message)
-        return value
-    }
+    console.log(message)
+    return value
+}
 
 
 
@@ -98,9 +65,9 @@ let log = (message) => (value) => {
 // call.
 
 let logValue = (value) => {
-        console.log(value)
-        return value
-    }
+    console.log(value)
+    return value
+}
 
 
 
@@ -130,35 +97,7 @@ let indentLines = (string, tab) =>
 
 
 
-const missingCaptureMsg = `
-Missing capture {}
-
-in string...
-{}
-
-with regex...
-{}
-`
-
-let missingCapture = (file, index, regex) =>
-    throwErr(format(
-        missingCaptureMsg,
-        index,
-        indentLines(file, spaces(4)),
-        spaces(4) + regex
-    ))
-
-
-let fromCaptures = (file, names, regex) =>
-    ((object, names) => {
-        names.forEach((name, index) => {
-            object[name] ||
-                missingCapture(file, index, regex)
-        })
-        return object
-    })(zipObject(names, captures(file, regex)), names)
-
-
+// Parses a content file.
 
 let parseFile = (file) =>
     update(
@@ -173,6 +112,8 @@ let parseFile = (file) =>
 
 
 
+// Parses a content's meta section.
+
 let parseMeta = (meta) =>
     update(
         fromCaptures(
@@ -186,6 +127,9 @@ let parseMeta = (meta) =>
 
 
 
+// Parses the tags portion of a content's
+// meta section.
+
 let parseTags = (tags) =>
     isEmpty(tags)
         ? throwErr('Content tags must '+
@@ -197,6 +141,55 @@ let parseTags = (tags) =>
 
 
 
+// The error message thrown by
+// `captureErr()`.
+
+const captureErrMsg = `
+Missing capture {}
+
+in string...
+{}
+
+with regex...
+{}
+`
+
+
+
+// Throws an error outlining what capture
+// is missing for what regex in what file.
+
+let captureErr = (file, index, regex) =>
+    throwErr(format(
+        captureErrMsg,
+        index,
+        indentLines(file, spaces(4)),
+        spaces(4) + regex
+    ))
+
+
+
+// Creates an object with the captures obtained from applying 
+// `regex to `string`. The captures are added as values to the
+// object using the `names` list as the keys. If there aren't
+// enough captures for the names provided, an error is thrown.
+
+let fromCaptures = (string, names, regex) => {
+    let object = zipObject(
+        names, captures(string, regex)
+    )
+    names.forEach((name, index) =>
+        object[name]
+            || captureErr(string, index, regex)
+    )
+    return object
+}
+
+
+
+// Returns a list of the captures obtained
+// by apply `regex` to `string`.
+
 let captures = (string, regex) =>
     tail(string.match(regex))
 
@@ -207,6 +200,9 @@ let captures = (string, regex) =>
  */
 
 
+
+// The template used to generate the
+// Posts.elm file.
 
 const template = `
 module Posts exposing (posts)
@@ -249,6 +245,8 @@ posts = [
         |> Dict.fromList
 `
 
+
+
 let generateElm = (parsedFiles) =>
     handlebars.compile(template)({ posts: parsedFiles })
 
@@ -260,11 +258,48 @@ let generateElm = (parsedFiles) =>
 
 
 
+// Returns a promise for the elm source code
+// after it's been passed through elm-format.
+
 let formatElm = (generatedElm) =>
     promiseFromProcess(
         exec('elm-format', [ '--stdin' ]),
         generatedElm
     )
+
+
+
+// Feeds `stdin` to the process's stdin pipe,
+// closes said pipe, and returns a promise
+// for the stdout of the exited process.
+// The `rejectedHandler' recieves an
+// object with the following
+// structure...
+//
+//     { exitCode: Int, stdout: String }
+//
+// ...where the exitCode and stdout values
+// originate from `process`.
+
+let promiseFromProcess = (process, stdin) => {
+    let stdout = ''
+    return new Promise((resolve, reject) => {
+        process.addListener('error', reject)
+        process.addListener('exit', (exitCode) =>
+            exitCode == 0
+                ? resolve(stdout)
+                : reject({
+                    exitCode: exitCode,
+                    stdout: stdout
+                })
+        )
+        process.stdout.on('data', (data) =>
+            stdout = stdout + data
+        )
+        process.stdin.write(stdin)
+        process.stdin.end()
+    })
+}
 
 
 
