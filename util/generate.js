@@ -26,10 +26,11 @@ let readdir = promise.promisify(fs.readdir)
 
 
 
-// TODO: This comment is outdate...
 // Feeds `stdin` to the process's stdin pipe,
 // closes said pipe, and returns a promise
-// for an object with the following
+// for the stdout of the exited process.
+// The `rejectedHandler' recieves an
+// object with the following
 // structure...
 //
 //     { exitCode: Int, stdout: String }
