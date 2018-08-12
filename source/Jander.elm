@@ -1,4 +1,6 @@
-module Main exposing (main)
+module Jander exposing (main)
+
+-- Imports: Html
 
 import Html
     exposing
@@ -27,16 +29,10 @@ import Html.Attributes
         , href
         , id
         )
-import Date
-    exposing
-        ( Date
-        )
-import Date.Format
-    exposing
-        ( format
-        )
-import Platform.Sub
-import Platform.Cmd
+
+
+-- Imports: Url
+
 import UrlParser as Url
     exposing
         ( (</>)
@@ -44,60 +40,22 @@ import UrlParser as Url
         , int
         , s
         )
-import Dict
-    exposing
-        ( Dict
-        )
+
+
+-- Imports: Utilities
+
+import Dict exposing (Dict)
+import Date exposing (Date)
+import Date.Format
 import Maybe
-import Result
+
+
+-- Imports: Core
+
+import Platform.Sub
+import Platform.Cmd
 import Navigation
-import Posts
-
-
--- test data
-
-
-parseDate : String -> Date
-parseDate string =
-    let
-        defaultDate =
-            Date.fromTime 0
-    in
-        Date.fromString string
-            |> Result.withDefault defaultDate
-
-
-contentToDictEntry : Content -> ( Int, Content )
-contentToDictEntry content =
-    ( content.id
-    , content
-    )
-
-
-testPosts : Posts
-testPosts =
-    [ Content
-        1
-        "MyPost"
-        (parseDate "1991/02/23")
-        [ "tag1", "tag2" ]
-        "This is my post content"
-    , Content
-        2
-        "Another Post"
-        (parseDate "2003/12/30")
-        [ "tag1", "tag3", "tag4" ]
-        "This is anothor post content"
-    , Content
-        3
-        "Ron Swanson"
-        (parseDate "1987/01/01")
-        [ "tag4" ]
-        "Lot 47"
-    ]
-        |> List.map contentToDictEntry
-        |> Dict.fromList
-
+import Content
 
 
 -- main
@@ -116,12 +74,39 @@ main =
 init : Navigation.Location -> ( Model, Cmd Msg )
 init location =
     let
+        posts =
+            postsFromList Content.content
+
         page =
-            pageFromLocation Posts.posts location
+            pageFromLocation posts location
     in
-        ( Model Posts.posts page
+        ( Model posts page
         , Cmd.none
         )
+
+
+
+-- Posts
+
+
+type alias Posts =
+    Dict Int Content
+
+
+type alias PostsEntry =
+    ( Int, Content )
+
+
+contentToDictEntry : Content -> PostsEntry
+contentToDictEntry content =
+    ( content.id
+    , content
+    )
+
+
+postsFromList : List Content -> Posts
+postsFromList =
+    List.map contentToDictEntry >> Dict.fromList
 
 
 
@@ -183,10 +168,6 @@ type alias Content =
     , tags : List String
     , body : String
     }
-
-
-type alias Posts =
-    Dict Int Content
 
 
 type alias Model =
@@ -300,13 +281,18 @@ postExcerpt =
         >> String.join " "
 
 
+formatDate : String -> Date -> String
+formatDate format date =
+    Date.Format.format format date
+
+
 tableBodyFromPost : Content -> Html Msg
 tableBodyFromPost post =
     tbody []
         [ tr []
             [ td [ rowspan 2 ]
-                [ div [] [ text (format "%b %d" post.date) ]
-                , div [] [ text (format "%Y" post.date) ]
+                [ div [] [ text (formatDate "%b %d" post.date) ]
+                , div [] [ text (formatDate "%Y" post.date) ]
                 ]
             , td []
                 [ a [ post.id |> PostRoute |> hrefFromRoute ]

@@ -6,4 +6,4 @@
 
 ---
 
-And so it began. <!-- more --> And so it continued.
+And so it began. And so it continued.

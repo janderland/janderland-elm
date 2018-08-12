@@ -15,7 +15,8 @@ let {
     update,
     every,
     range,
-    tail
+    tail,
+    set
 } = require('lodash')
 
 let writeFile = promise.promisify(fs.writeFile)
@@ -208,13 +209,9 @@ let captures = (string, regex) =>
 // Posts.elm file.
 
 const template = `
-module Posts exposing (posts)
+module Content exposing (Content, content)
 
-import Dict exposing (Dict)
 import Date exposing (Date)
-
-type alias Posts =
-    Dict Int Content
 
 type alias Content =
     { id : Int
@@ -224,12 +221,8 @@ type alias Content =
     , body : String
     }
 
-entry : Content -> ( Int, Content )
-entry content =
-    ( content.id, content)
-
-posts : Posts
-posts = [
+content : List Content
+content = [
     {{#each posts}}
     Content
         {{@index}}
@@ -244,8 +237,6 @@ posts = [
         {{#unless @last}},{{/unless}}
     {{/each}}
     ]
-        |> List.map entry
-        |> Dict.fromList
 `
 
 
@@ -323,21 +314,26 @@ let writeElm = (file) => (elm) =>
 
 
 
-let getEnvVar = (name) =>
-    process.env[name] || throwErr(
-        'Missing environment variable "' + name + '"'
-    )
+let env = reduce([
+        'JANDER_BUILD',
+        'JANDER_CONTENT',
+        'JANDER_GENERATED'
+    ], (env, name) =>
+        set(
+            env,
+            name,
+            process.env[name] || throwErr(
+                'Missing environment ' +
+                'variable "' + name + '"'
+            )
+        ),
+    {})
 
 
+//console.log(process.env)
+console.log(env)
 
-let build = getEnvVar('JANDER_BUILD')
-let posts = getEnvVar('JANDER_POSTS')
-let content = getEnvVar('JANDER_CONTENT')
-let outfile = path.join(build, posts)
-
-
-
-readFilesFromDir(content)
+readFilesFromDir(env.JANDER_CONTENT)
 
     .then(log('Parsing content'))
     .map(parseFile)
@@ -349,7 +345,10 @@ readFilesFromDir(content)
     .then(formatElm)
 
     .then(log('Writing file'))
-    .then(writeElm(outfile))
+    .then(writeElm(path.join(
+        env.JANDER_BUILD,
+        env.JANDER_GENERATED
+    )))
 
     .catch((err) => {
         console.error(err)
