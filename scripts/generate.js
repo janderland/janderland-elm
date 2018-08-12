@@ -330,8 +330,6 @@ let env = reduce([
     {})
 
 
-//console.log(process.env)
-console.log(env)
 
 readFilesFromDir(env.JANDER_CONTENT)
 
