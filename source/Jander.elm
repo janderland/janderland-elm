@@ -5,7 +5,7 @@ import Html exposing (..)
 import Platform.Sub
 import Platform.Cmd
 import Route exposing (Route)
-import Page exposing (Page)
+import Pages exposing (Page)
 import Views
 
 
@@ -42,7 +42,7 @@ init : Location -> ( Model, Cmd Msg )
 init location =
     let
         page =
-            location |> Route.fromLocation |> Page.fromRoute
+            location |> Route.fromLocation |> Pages.fromRoute
     in
         ( Model page, Cmd.none )
 
@@ -59,7 +59,7 @@ update msg model =
                 page =
                     location
                         |> Route.fromLocation
-                        |> Page.fromRoute
+                        |> Pages.fromRoute
             in
                 ( { model | page = page }, Cmd.none )
 
@@ -82,13 +82,13 @@ view { page } =
     let
         children =
             case page of
-                Page.Home ->
+                Pages.Home ->
                     Views.home
 
-                Page.Post content ->
+                Pages.Post content ->
                     Views.post content
 
-                Page.NotFound ->
+                Pages.NotFound ->
                     Views.notFound
     in
         div [] children
