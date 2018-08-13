@@ -23,7 +23,7 @@ main =
 
 
 
--- m & m
+-- m&m
 
 
 type alias Model =
