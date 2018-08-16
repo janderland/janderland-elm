@@ -79,16 +79,4 @@ subscriptions model =
 
 view : Model -> Html Msg
 view { page } =
-    let
-        children =
-            case page of
-                Pages.Home ->
-                    Views.home
-
-                Pages.Post content ->
-                    Views.post content
-
-                Pages.NotFound ->
-                    Views.notFound
-    in
-        div [] children
+    Views.view page
