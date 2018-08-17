@@ -1,6 +1,7 @@
 module Views exposing (..)
 
 import Element.Attributes exposing (..)
+import Element.Input as Input
 import Element exposing (..)
 import Style exposing (..)
 import Style.Font as Font
@@ -11,6 +12,7 @@ import Dict
 import Content exposing (Content)
 import Posts exposing (posts)
 import Pages exposing (Page)
+import Model exposing (..)
 import Route
 
 
@@ -19,18 +21,20 @@ import Route
 
 type Styles
     = None
-    | HomeBar
+    | Bar
     | HomeTitle
     | PostTableLink
     | Title
     | PostBody
+    | TopTitle
+    | TopSearch
 
 
 stylesheet : StyleSheet Styles v
 stylesheet =
     styleSheet
         [ style None []
-        , style HomeBar
+        , style Bar
             [ Font.center
             ]
         , style HomeTitle
@@ -44,6 +48,14 @@ stylesheet =
             [ Font.size 80
             , Font.bold
             ]
+        , style TopTitle
+            [ Font.size 30
+            , Font.alignLeft
+            , Font.bold
+            ]
+        , style TopSearch
+            [ Font.alignRight
+            ]
         ]
 
 
@@ -51,19 +63,19 @@ stylesheet =
 -- root view
 
 
-view : Page -> Html m
-view page =
+view : Model -> Html Msg
+view model =
     let
         children =
-            case page of
+            case model.page of
                 Pages.Home ->
-                    home
+                    home model
 
                 Pages.Post content ->
-                    post content
+                    post model content
 
                 Pages.NotFound ->
-                    notFound
+                    notFound model
     in
         layout stylesheet <|
             column None
@@ -77,46 +89,91 @@ view page =
 -- home page
 
 
-home : List (Element Styles v m)
-home =
-    [ homeBar
-    , posts
-        |> Dict.values
-        |> List.take 5
-        |> postTable
+home : Model -> List (Element Styles v Msg)
+home model =
+    [ homeBar model.searchAll
+    , posts |> Dict.values |> List.take 5 |> postTable
     ]
 
 
-homeBar : Element Styles v m
-homeBar =
-    column HomeBar
-        []
-        [ el HomeTitle [] (text "jander.land") ]
+homeBar : String -> Element Styles v Msg
+homeBar searchAll =
+    column Bar
+        [ center ]
+        [ el HomeTitle [] <| text "jander.land"
+        , el None [] <|
+            Input.text
+                None
+                [ maxWidth <| px 300
+                , alignRight
+                ]
+                { onChange = SearchAll
+                , value = searchAll
+                , label =
+                    Input.placeholder
+                        { label = Input.hiddenLabel ""
+                        , text = "search all"
+                        }
+                , options = []
+                }
+        ]
 
 
 
 -- post page
 
 
-post : Content -> List (Element Styles v m)
-post content =
-    [ el Title [] (text content.name)
+post : Model -> Content -> List (Element Styles v Msg)
+post model content =
+    [ topBar model.searchAll
+    , el Title [] <| text content.name
     , el None [] <| text (formatDate "%b %d %Y" content.date)
     , postBody content.body
     ]
 
 
-postBody : String -> Element Styles v m
+postBody : String -> Element Styles v Msg
 postBody body =
     paragraph None [] <| [ text body ]
+
+
+
+-- top bar
+
+
+topBar : String -> Element Styles v Msg
+topBar searchAll =
+    let
+        fragment =
+            Route.Home |> Route.toFragment
+    in
+        row Bar
+            [ verticalCenter ]
+            [ el TopTitle
+                [ width <| fillPortion 1 ]
+                (link fragment <| text "jander.land")
+            , el None [ width <| fillPortion 1 ] <|
+                Input.text
+                    TopSearch
+                    [ maxWidth <| px 300, alignRight ]
+                    { onChange = SearchAll
+                    , value = searchAll
+                    , label =
+                        Input.placeholder
+                            { label = Input.hiddenLabel ""
+                            , text = "search all"
+                            }
+                    , options = []
+                    }
+            ]
 
 
 
 -- not found page
 
 
-notFound : List (Element Styles v m)
-notFound =
+notFound : Model -> List (Element Styles v Msg)
+notFound model =
     [ row None
         [ center ]
         [ el Title [] <| text "not found" ]
@@ -127,7 +184,7 @@ notFound =
 -- post table
 
 
-postTable : List Content -> Element Styles v m
+postTable : List Content -> Element Styles v Msg
 postTable posts =
     table None
         [ spacing 10 ]
@@ -136,7 +193,7 @@ postTable posts =
         ]
 
 
-postDate : Content -> Element Styles v m
+postDate : Content -> Element Styles v Msg
 postDate { id, name, date, tags, body } =
     column None
         [ center, verticalCenter ]
@@ -145,7 +202,7 @@ postDate { id, name, date, tags, body } =
         ]
 
 
-postSummary : Content -> Element Styles v m
+postSummary : Content -> Element Styles v Msg
 postSummary { id, name, date, tags, body } =
     let
         fragment =
@@ -163,6 +220,10 @@ excerpt =
     String.words
         >> List.take 20
         >> String.join " "
+
+
+
+-- utilities
 
 
 formatDate : String -> Date -> String
