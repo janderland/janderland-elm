@@ -22,12 +22,12 @@ import Route
 type Styles
     = None
     | Bar
-    | HomeTitle
-    | PostTableLink
     | Title
-    | PostBody
+    | HomeTitle
+    | HomeSearch
     | TopTitle
     | TopSearch
+    | PostTableLink
 
 
 stylesheet : StyleSheet Styles v
@@ -37,16 +37,16 @@ stylesheet =
         , style Bar
             [ Font.center
             ]
+        , style Title
+            [ Font.size 80
+            , Font.bold
+            ]
         , style HomeTitle
             [ Font.size 100
             , Font.bold
             ]
-        , style PostTableLink
-            [ Font.size 25
-            ]
-        , style Title
-            [ Font.size 80
-            , Font.bold
+        , style HomeSearch
+            [ Font.center
             ]
         , style TopTitle
             [ Font.size 30
@@ -55,6 +55,9 @@ stylesheet =
             ]
         , style TopSearch
             [ Font.alignRight
+            ]
+        , style PostTableLink
+            [ Font.size 25
             ]
         ]
 
@@ -77,9 +80,16 @@ view model =
                 Pages.NotFound ->
                     notFound model
     in
-        layout stylesheet <|
+        root children
+
+
+root : List (Element Styles v Msg) -> Html Msg
+root children =
+    layout stylesheet <|
+        el None [ center ] <|
             column None
-                [ paddingXY 230 20
+                [ width <| px 800
+                , paddingXY 0 20
                 , spacing 20
                 ]
                 children
@@ -102,11 +112,8 @@ homeBar searchAll =
         [ center ]
         [ el HomeTitle [] <| text "jander.land"
         , el None [] <|
-            Input.text
-                None
-                [ maxWidth <| px 300
-                , alignRight
-                ]
+            Input.text HomeSearch
+                []
                 { onChange = SearchAll
                 , value = searchAll
                 , label =
@@ -217,9 +224,7 @@ postSummary { id, name, date, tags, body } =
 
 excerpt : String -> String
 excerpt =
-    String.words
-        >> List.take 20
-        >> String.join " "
+    String.words >> List.take 20 >> String.join " "
 
 
 

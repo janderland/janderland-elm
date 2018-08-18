@@ -16,9 +16,9 @@ main : Program Never Model Msg
 main =
     Navigation.program UrlChange
         { init = init
-        , update = update
-        , subscriptions = subscriptions
         , view = view
+        , update = update
+        , subscriptions = subs
         }
 
 
@@ -60,6 +60,6 @@ update msg model =
 -- subscriptions
 
 
-subscriptions : Model -> Sub Msg
-subscriptions model =
+subs : Model -> Sub Msg
+subs model =
     Sub.none
