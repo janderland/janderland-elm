@@ -113,7 +113,7 @@ homeBar searchAll =
         [ el HomeTitle [] <| text "jander.land"
         , el None [] <|
             Input.text HomeSearch
-                []
+                [ width <| px 300 ]
                 { onChange = SearchAll
                 , value = searchAll
                 , label =
@@ -160,8 +160,7 @@ topBar searchAll =
                 [ width <| fillPortion 1 ]
                 (link fragment <| text "jander.land")
             , el None [ width <| fillPortion 1 ] <|
-                Input.text
-                    TopSearch
+                Input.text TopSearch
                     [ maxWidth <| px 300, alignRight ]
                     { onChange = SearchAll
                     , value = searchAll
