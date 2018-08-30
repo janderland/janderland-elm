@@ -4,6 +4,7 @@ import Element.Attributes exposing (..)
 import Element.Input as Input
 import Element exposing (..)
 import Style exposing (..)
+import Style.Border as Border
 import Style.Font as Font
 import Html exposing (Html)
 import Date exposing (Date)
@@ -47,6 +48,7 @@ stylesheet =
             ]
         , style HomeSearch
             [ Font.center
+            , Border.all 1
             ]
         , style TopTitle
             [ Font.size 30
@@ -55,6 +57,7 @@ stylesheet =
             ]
         , style TopSearch
             [ Font.alignRight
+            , Border.all 1
             ]
         , style PostTableLink
             [ Font.size 25
@@ -113,7 +116,7 @@ homeBar searchAll =
         [ el HomeTitle [] <| text "jander.land"
         , el None [] <|
             Input.text HomeSearch
-                [ width <| px 300 ]
+                [ width <| px 200, paddingXY 5 7 ]
                 { onChange = SearchAll
                 , value = searchAll
                 , label =
@@ -161,7 +164,7 @@ topBar searchAll =
                 (link fragment <| text "jander.land")
             , el None [ width <| fillPortion 1 ] <|
                 Input.text TopSearch
-                    [ maxWidth <| px 300, alignRight ]
+                    [ maxWidth <| px 200, alignRight, paddingXY 5 7 ]
                     { onChange = SearchAll
                     , value = searchAll
                     , label =
@@ -193,7 +196,7 @@ notFound model =
 postTable : List Content -> Element Styles v Msg
 postTable posts =
     table None
-        [ spacing 10 ]
+        [ spacing 30 ]
         [ List.map postDate posts
         , List.map postSummary posts
         ]
