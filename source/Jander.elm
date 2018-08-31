@@ -30,7 +30,7 @@ init : Location -> ( Model, Cmd Msg )
 init location =
     let
         page =
-            location |> Route.fromLocation |> Pages.fromRoute
+            location |> toPage
 
         model =
             Model page ""
@@ -48,12 +48,16 @@ update msg model =
         UrlChange location ->
             let
                 page =
-                    location |> Route.fromLocation |> Pages.fromRoute
+                    location |> toPage
             in
-                ( { model | page = page }, Cmd.none )
+                ( { model | page = page }
+                , Cmd.none
+                )
 
-        SearchAll searchAll ->
-            ( { model | searchAll = searchAll }, Cmd.none )
+        SearchQuery searchQuery ->
+            ( { model | searchQuery = searchQuery }
+            , Cmd.none
+            )
 
 
 
@@ -63,3 +67,12 @@ update msg model =
 subs : Model -> Sub Msg
 subs model =
     Sub.none
+
+
+
+-- utility
+
+
+toPage : Location -> Page
+toPage =
+    Route.fromLocation >> Pages.fromRoute

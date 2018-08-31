@@ -6,10 +6,10 @@ import Pages exposing (Page)
 
 type alias Model =
     { page : Page
-    , searchAll : String
+    , searchQuery : String
     }
 
 
 type Msg
     = UrlChange Location
-    | SearchAll String
+    | SearchQuery String

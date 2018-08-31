@@ -15,8 +15,7 @@ type Page
 
 post : Int -> Maybe Page
 post id =
-    Dict.get id posts
-        |> Maybe.map Post
+    Dict.get id posts |> Maybe.map Post
 
 
 fromRoute : Maybe Route -> Page

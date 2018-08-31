@@ -31,7 +31,15 @@ type Styles
     | PostTableLink
 
 
-stylesheet : StyleSheet Styles v
+type Variations
+    = VariationsPlaceholder
+
+
+type alias Piece =
+    Element Styles Variations Msg
+
+
+stylesheet : StyleSheet Styles Variations
 stylesheet =
     styleSheet
         [ style None []
@@ -83,66 +91,76 @@ view model =
                 Pages.NotFound ->
                     notFound model
     in
-        root children
+        root children |> layout stylesheet
 
 
-root : List (Element Styles v Msg) -> Html Msg
+root : List Piece -> Piece
 root children =
-    layout stylesheet <|
-        el None [ center ] <|
-            column None
-                [ width <| px 800
-                , paddingXY 0 20
-                , spacing 20
-                ]
-                children
+    el None [ center ] <|
+        column None
+            [ width <| px 800
+            , paddingXY 0 20
+            , spacing 20
+            ]
+            children
 
 
 
 -- home page
 
 
-home : Model -> List (Element Styles v Msg)
+home : Model -> List Piece
 home model =
-    [ homeBar model.searchAll
+    [ homeBar model.searchQuery
     , posts |> Dict.values |> List.take 5 |> postTable
     ]
 
 
-homeBar : String -> Element Styles v Msg
-homeBar searchAll =
+homeBar : String -> Piece
+homeBar searchQuery =
     column Bar
         [ center ]
         [ el HomeTitle [] <| text "jander.land"
-        , el None [] <|
-            Input.text HomeSearch
-                [ width <| px 200, paddingXY 5 7 ]
-                { onChange = SearchAll
-                , value = searchAll
-                , label =
-                    Input.placeholder
-                        { label = Input.hiddenLabel ""
-                        , text = "search all"
-                        }
-                , options = []
-                }
+        , el None [] <| homeSearch searchQuery
         ]
+
+
+
+-- TODO: can we combine homeSearch with topSearch?
+
+
+homeSearch : String -> Piece
+homeSearch query =
+    let
+        label =
+            Input.placeholder
+                { label = Input.hiddenLabel "search"
+                , text = "search"
+                }
+    in
+        Input.text HomeSearch
+            [ width <| px 200, paddingXY 5 7 ]
+            { onChange = SearchQuery
+            , value = query
+            , label = label
+            , options = []
+            }
 
 
 
 -- post page
 
 
-post : Model -> Content -> List (Element Styles v Msg)
+post : Model -> Content -> List Piece
 post model content =
-    [ topBar model.searchAll
+    [ topBar model.searchQuery
     , el Title [] <| text content.name
-    , el None [] <| text (formatDate "%b %d %Y" content.date)
+    , el None [] <| text <| formatDate "%b %d %Y" content.date
     , postBody content.body
     ]
 
 
-postBody : String -> Element Styles v Msg
+postBody : String -> Piece
 postBody body =
     paragraph None [] <| [ text body ]
 
@@ -151,37 +169,45 @@ postBody body =
 -- top bar
 
 
-topBar : String -> Element Styles v Msg
-topBar searchAll =
+topBar : String -> Piece
+topBar searchQuery =
     let
-        fragment =
+        homeFrag =
             Route.Home |> Route.toFragment
+
+        homeLink =
+            link homeFrag <| text "jander.land"
     in
         row Bar
             [ verticalCenter ]
-            [ el TopTitle
-                [ width <| fillPortion 1 ]
-                (link fragment <| text "jander.land")
-            , el None [ width <| fillPortion 1 ] <|
-                Input.text TopSearch
-                    [ maxWidth <| px 200, alignRight, paddingXY 5 7 ]
-                    { onChange = SearchAll
-                    , value = searchAll
-                    , label =
-                        Input.placeholder
-                            { label = Input.hiddenLabel ""
-                            , text = "search all"
-                            }
-                    , options = []
-                    }
+            [ el TopTitle [ width <| fillPortion 1 ] <| homeLink
+            , el None [ width <| fillPortion 1 ] <| topSearch searchQuery
             ]
+
+
+topSearch : String -> Piece
+topSearch query =
+    let
+        label =
+            Input.placeholder
+                { label = Input.hiddenLabel "search"
+                , text = "search"
+                }
+    in
+        Input.text TopSearch
+            [ maxWidth <| px 200, paddingXY 5 7, alignRight ]
+            { onChange = SearchQuery
+            , value = query
+            , label = label
+            , options = []
+            }
 
 
 
 -- not found page
 
 
-notFound : Model -> List (Element Styles v Msg)
+notFound : Model -> List Piece
 notFound model =
     [ row None
         [ center ]
@@ -193,7 +219,7 @@ notFound model =
 -- post table
 
 
-postTable : List Content -> Element Styles v Msg
+postTable : List Content -> Piece
 postTable posts =
     table None
         [ spacing 30 ]
@@ -202,25 +228,25 @@ postTable posts =
         ]
 
 
-postDate : Content -> Element Styles v Msg
-postDate { id, name, date, tags, body } =
+postDate : Content -> Piece
+postDate content =
     column None
         [ center, verticalCenter ]
-        [ el None [] <| text (formatDate "%b %d" date)
-        , el None [] <| text (formatDate "%Y" date)
+        [ el None [] <| text <| formatDate "%b %d" content.date
+        , el None [] <| text <| formatDate "%Y" content.date
         ]
 
 
-postSummary : Content -> Element Styles v Msg
-postSummary { id, name, date, tags, body } =
+postSummary : Content -> Piece
+postSummary content =
     let
-        fragment =
-            id |> Route.Post |> Route.toFragment
+        postFrag =
+            content.id |> Route.Post |> Route.toFragment
     in
         column None
             [ spacing 10 ]
-            [ el PostTableLink [] (link fragment (text name))
-            , el None [] (text <| excerpt body ++ "...")
+            [ el PostTableLink [] <| link postFrag <| text content.name
+            , el None [] <| text <| excerpt content.body ++ "..."
             ]
 
 
