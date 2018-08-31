@@ -125,10 +125,6 @@ homeBar searchQuery =
         ]
 
 
-
--- TODO: can we combine homeSearch with topSearch?
-
-
 homeSearch : String -> Piece
 homeSearch query =
     let
