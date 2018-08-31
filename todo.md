@@ -1,4 +1,5 @@
 # TODO
 
-1. Write markdown parser for parsing the post bodies.
-2. Work on responsiveness of layout.
+1. Upgrade to Elm 0.19
+2. Write markdown parser for parsing the post bodies.
+3. Work on responsiveness of layout.
