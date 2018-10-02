@@ -1,6 +1,5 @@
-module Model exposing (..)
+module Model exposing (Model, Msg(..))
 
-import Navigation exposing (Location)
 import Pages exposing (Page)
 
 

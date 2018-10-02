@@ -211,12 +211,12 @@ let captures = (string, regex) =>
 const template = `
 module Content exposing (Content, content)
 
-import Date exposing (Date)
+import Time
 
 type alias Content =
     { id : Int
     , name : String
-    , date : Date
+    , date : Time.Posix
     , tags : List String
     , body : String
     }
@@ -227,7 +227,7 @@ content = [
     Content
         {{@index}}
         "{{this.meta.title}}"
-        (Date.fromTime 0)
+        (Time.millisToPosix 0)
         [
             {{#each this.meta.tags}}
                 "{{this}}"{{#unless @last}},{{/unless}}

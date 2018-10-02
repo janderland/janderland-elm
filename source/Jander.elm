@@ -1,12 +1,12 @@
 module Jander exposing (main)
 
-import Navigation exposing (Location)
-import Platform.Sub
-import Platform.Cmd
-import Route exposing (Route)
-import Pages exposing (Page)
-import Views exposing (view)
 import Model exposing (..)
+import Pages exposing (Page)
+import Platform.Cmd
+import Platform.Sub
+import Route exposing (Route)
+import Views exposing (view)
+
 
 
 -- main
@@ -35,7 +35,7 @@ init location =
         model =
             Model page ""
     in
-        ( model, Cmd.none )
+    ( model, Cmd.none )
 
 
 
@@ -50,9 +50,9 @@ update msg model =
                 page =
                     location |> toPage
             in
-                ( { model | page = page }
-                , Cmd.none
-                )
+            ( { model | page = page }
+            , Cmd.none
+            )
 
         SearchQuery searchQuery ->
             ( { model | searchQuery = searchQuery }

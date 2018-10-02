@@ -1,8 +1,8 @@
-module Route exposing (..)
+module Route exposing (Route(..), fromLocation, parser, toFragment)
 
-import Navigation exposing (..)
-import UrlParser exposing (..)
 import Maybe
+import Url
+import Url.Parser exposing ((</>), Parser, int, map, oneOf, s, top)
 
 
 type Route
@@ -32,6 +32,6 @@ toFragment route =
                     []
 
                 Post id ->
-                    [ "post", toString id ]
+                    [ "post", String.fromInt id ]
     in
-        "#/" ++ String.join "/" pieces
+    "#/" ++ String.join "/" pieces

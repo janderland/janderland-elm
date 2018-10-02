@@ -1,20 +1,20 @@
-module Views exposing (..)
+module Views exposing (Piece, Styles(..), Variations(..), excerpt, home, homeBar, homeSearch, notFound, post, postBody, postDate, postSummary, postTable, root, stylesheet, topBar, topSearch, view)
 
+import Content exposing (Content)
+import Dict
+import Element exposing (..)
 import Element.Attributes exposing (..)
 import Element.Input as Input
-import Element exposing (..)
+import Html exposing (Html)
+import Model exposing (..)
+import Pages exposing (Page)
+import Posts exposing (posts)
+import Route
 import Style exposing (..)
 import Style.Border as Border
 import Style.Font as Font
-import Html exposing (Html)
-import Date exposing (Date)
-import Date.Format
-import Dict
-import Content exposing (Content)
-import Posts exposing (posts)
-import Pages exposing (Page)
-import Model exposing (..)
-import Route
+import Time
+
 
 
 -- styles
@@ -91,7 +91,7 @@ view model =
                 Pages.NotFound ->
                     notFound model
     in
-        root children |> layout stylesheet
+    root children |> layout stylesheet
 
 
 root : List Piece -> Piece
@@ -134,13 +134,13 @@ homeSearch query =
                 , text = "search"
                 }
     in
-        Input.text HomeSearch
-            [ width <| px 200, paddingXY 5 7 ]
-            { onChange = SearchQuery
-            , value = query
-            , label = label
-            , options = []
-            }
+    Input.text HomeSearch
+        [ width <| px 200, paddingXY 5 7 ]
+        { onChange = SearchQuery
+        , value = query
+        , label = label
+        , options = []
+        }
 
 
 
@@ -149,9 +149,13 @@ homeSearch query =
 
 post : Model -> Content -> List Piece
 post model content =
+    let
+        formatDate date =
+            "%b %d %Y"
+    in
     [ topBar model.searchQuery
     , el Title [] <| text content.name
-    , el None [] <| text <| formatDate "%b %d %Y" content.date
+    , el None [] <| text <| formatDate content.date
     , postBody content.body
     ]
 
@@ -174,11 +178,11 @@ topBar searchQuery =
         homeLink =
             link homeFrag <| text "jander.land"
     in
-        row Bar
-            [ verticalCenter ]
-            [ el TopTitle [ width <| fillPortion 1 ] <| homeLink
-            , el None [ width <| fillPortion 1 ] <| topSearch searchQuery
-            ]
+    row Bar
+        [ verticalCenter ]
+        [ el TopTitle [ width <| fillPortion 1 ] <| homeLink
+        , el None [ width <| fillPortion 1 ] <| topSearch searchQuery
+        ]
 
 
 topSearch : String -> Piece
@@ -190,13 +194,13 @@ topSearch query =
                 , text = "search"
                 }
     in
-        Input.text TopSearch
-            [ maxWidth <| px 200, paddingXY 5 7, alignRight ]
-            { onChange = SearchQuery
-            , value = query
-            , label = label
-            , options = []
-            }
+    Input.text TopSearch
+        [ maxWidth <| px 200, paddingXY 5 7, alignRight ]
+        { onChange = SearchQuery
+        , value = query
+        , label = label
+        , options = []
+        }
 
 
 
@@ -226,10 +230,17 @@ postTable posts =
 
 postDate : Content -> Piece
 postDate content =
+    let
+        formatMonthDay date =
+            "%b %d"
+
+        formatYear date =
+            "%Y"
+    in
     column None
         [ center, verticalCenter ]
-        [ el None [] <| text <| formatDate "%b %d" content.date
-        , el None [] <| text <| formatDate "%Y" content.date
+        [ el None [] <| text <| formatMonthDay content.date
+        , el None [] <| text <| formatYear content.date
         ]
 
 
@@ -239,22 +250,13 @@ postSummary content =
         postFrag =
             content.id |> Route.Post |> Route.toFragment
     in
-        column None
-            [ spacing 10 ]
-            [ el PostTableLink [] <| link postFrag <| text content.name
-            , el None [] <| text <| excerpt content.body ++ "..."
-            ]
+    column None
+        [ spacing 10 ]
+        [ el PostTableLink [] <| link postFrag <| text content.name
+        , el None [] <| text <| excerpt content.body ++ "..."
+        ]
 
 
 excerpt : String -> String
 excerpt =
     String.words >> List.take 20 >> String.join " "
-
-
-
--- utilities
-
-
-formatDate : String -> Date -> String
-formatDate format date =
-    Date.Format.format format date

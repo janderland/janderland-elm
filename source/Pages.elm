@@ -1,8 +1,8 @@
-module Pages exposing (..)
+module Pages exposing (Page(..), fromRoute, post)
 
-import Maybe exposing (withDefault)
-import Dict
 import Content exposing (Content)
+import Dict
+import Maybe exposing (withDefault)
 import Posts exposing (posts)
 import Route exposing (Route)
 

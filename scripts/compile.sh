@@ -3,5 +3,5 @@
 MAIN=$JANDER_MAIN
 BUILD=$JANDER_BUILD
 
-elm-make ${BUILD}/${MAIN} \
-    --warn --output ${BUILD}/${MAIN%.*}.html
+elm make ${BUILD}/${MAIN} \
+    --output ${BUILD}/${MAIN%.*}.html
