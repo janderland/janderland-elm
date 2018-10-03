@@ -1,10 +1,10 @@
 module Route exposing
     ( Route(..)
     , fromUrl
-    , parser
     , toFragment
     )
 
+import Debug exposing (log)
 import Maybe
 import Url exposing (Url)
 import Url.Parser as Parser
@@ -13,7 +13,6 @@ import Url.Parser as Parser
         , Parser
         , int
         , map
-        , oneOf
         , s
         , top
         )
@@ -26,7 +25,7 @@ type Route
 
 parser : Parser (Route -> a) a
 parser =
-    oneOf
+    Parser.oneOf
         [ map Home <| top
         , map Post <| s "post" </> int
         ]
@@ -34,7 +33,13 @@ parser =
 
 fromUrl : Url -> Maybe Route
 fromUrl url =
-    Parser.parse parser url
+    let
+        path =
+            Maybe.withDefault "" url.fragment
+    in
+    { url | path = path, fragment = Nothing }
+        |> log "url"
+        |> Parser.parse parser
 
 
 toFragment : Route -> String

@@ -54,8 +54,9 @@ update msg model =
             case urlRequest of
                 Browser.Internal url ->
                     ( model
-                    , Nav.pushUrl model.key <|
-                        Url.toString url
+                    , Nav.pushUrl
+                        model.key
+                        (Url.toString url)
                     )
 
                 Browser.External url ->

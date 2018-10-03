@@ -1,4 +1,4 @@
-module Pages exposing (Page(..), fromRoute, post)
+module Pages exposing (Page, fromRoute)
 
 import Content exposing (Content)
 import Dict
