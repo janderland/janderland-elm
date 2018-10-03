@@ -1,8 +1,22 @@
-module Route exposing (Route(..), fromLocation, parser, toFragment)
+module Route exposing
+    ( Route(..)
+    , fromUrl
+    , parser
+    , toFragment
+    )
 
 import Maybe
-import Url
-import Url.Parser exposing ((</>), Parser, int, map, oneOf, s, top)
+import Url exposing (Url)
+import Url.Parser as Parser
+    exposing
+        ( (</>)
+        , Parser
+        , int
+        , map
+        , oneOf
+        , s
+        , top
+        )
 
 
 type Route
@@ -18,9 +32,9 @@ parser =
         ]
 
 
-fromLocation : Location -> Maybe Route
-fromLocation location =
-    parseHash parser location
+fromUrl : Url -> Maybe Route
+fromUrl url =
+    Parser.parse parser url
 
 
 toFragment : Route -> String

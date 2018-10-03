@@ -1,4 +1,23 @@
-module Views exposing (Piece, Styles(..), Variations(..), excerpt, home, homeBar, homeSearch, notFound, post, postBody, postDate, postSummary, postTable, root, stylesheet, topBar, topSearch, view)
+module Views exposing
+    ( Piece
+    , Styles(..)
+    , Variations(..)
+    , excerpt
+    , home
+    , homeBar
+    , homeSearch
+    , notFound
+    , post
+    , postBody
+    , postDate
+    , postSummary
+    , postTable
+    , root
+    , stylesheet
+    , topBar
+    , topSearch
+    , view
+    )
 
 import Content exposing (Content)
 import Dict

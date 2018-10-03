@@ -1,10 +1,13 @@
 module Jander exposing (main)
 
+import Browser
+import Browser.Navigation as Nav
 import Model exposing (..)
 import Pages exposing (Page)
 import Platform.Cmd
 import Platform.Sub
 import Route exposing (Route)
+import Url exposing (Url)
 import Views exposing (view)
 
 
@@ -12,13 +15,15 @@ import Views exposing (view)
 -- main
 
 
-main : Program Never Model Msg
+main : Program () Model Msg
 main =
-    Navigation.program UrlChange
+    Browser.application
         { init = init
         , view = view
         , update = update
         , subscriptions = subs
+        , onUrlChange = UrlChanged
+        , onUrlRequest = LinkClicked
         }
 
 
@@ -26,14 +31,14 @@ main =
 -- init
 
 
-init : Location -> ( Model, Cmd Msg )
-init location =
+init : () -> Url -> Nav.Key -> ( Model, Cmd Msg )
+init flags url key =
     let
         page =
-            location |> toPage
+            toPage url
 
         model =
-            Model page ""
+            Model key page ""
     in
     ( model, Cmd.none )
 
@@ -45,10 +50,23 @@ init location =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        UrlChange location ->
+        LinkClicked urlRequest ->
+            case urlRequest of
+                Browser.Internal url ->
+                    ( model
+                    , Nav.pushUrl model.key <|
+                        Url.toString url
+                    )
+
+                Browser.External url ->
+                    ( model
+                    , Nav.load url
+                    )
+
+        UrlChanged url ->
             let
                 page =
-                    location |> toPage
+                    toPage url
             in
             ( { model | page = page }
             , Cmd.none
@@ -73,6 +91,6 @@ subs model =
 -- utility
 
 
-toPage : Location -> Page
+toPage : Url -> Page
 toPage =
-    Route.fromLocation >> Pages.fromRoute
+    Route.fromUrl >> Pages.fromRoute
