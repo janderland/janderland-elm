@@ -19,6 +19,7 @@ module Views exposing
     , view
     )
 
+import Browser
 import Content exposing (Content)
 import Dict
 import Element exposing (..)
@@ -96,7 +97,7 @@ stylesheet =
 -- root view
 
 
-view : Model -> Html Msg
+view : Model -> Browser.Document Msg
 view model =
     let
         children =
@@ -110,7 +111,11 @@ view model =
                 Pages.NotFound ->
                     notFound model
     in
-    root children |> layout stylesheet
+    root children
+        |> layout stylesheet
+        |> (\x ->
+                Browser.Document "jander.land" [ x ]
+           )
 
 
 root : List Piece -> Piece
