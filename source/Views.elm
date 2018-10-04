@@ -1,26 +1,8 @@
-module Views exposing
-    ( Piece
-    , Styles(..)
-    , Variations(..)
-    , excerpt
-    , home
-    , homeBar
-    , homeSearch
-    , notFound
-    , post
-    , postBody
-    , postDate
-    , postSummary
-    , postTable
-    , root
-    , stylesheet
-    , topBar
-    , topSearch
-    , view
-    )
+module Views exposing (view)
 
 import Browser
 import Content exposing (Content)
+import DateFormat
 import Dict
 import Element exposing (..)
 import Element.Attributes exposing (..)
@@ -100,22 +82,19 @@ stylesheet =
 view : Model -> Browser.Document Msg
 view model =
     let
-        children =
+        ( title, children ) =
             case model.page of
                 Pages.Home ->
-                    home model
+                    ( "jander.land", home model )
 
                 Pages.Post content ->
-                    post model content
+                    ( content.name, post model content )
 
                 Pages.NotFound ->
-                    notFound model
+                    ( "not found", notFound model )
     in
-    root children
-        |> layout stylesheet
-        |> (\x ->
-                Browser.Document "jander.land" [ x ]
-           )
+    Browser.Document title
+        [ root children |> layout stylesheet ]
 
 
 root : List Piece -> Piece
@@ -174,12 +153,20 @@ homeSearch query =
 post : Model -> Content -> List Piece
 post model content =
     let
-        formatDate date =
-            "%b %d %Y"
+        date =
+            DateFormat.format
+                [ DateFormat.monthNameAbbreviated
+                , DateFormat.text " "
+                , DateFormat.dayOfMonthNumber
+                , DateFormat.text " "
+                , DateFormat.yearNumber
+                ]
+                Time.utc
+                content.date
     in
     [ topBar model.searchQuery
     , el Title [] <| text content.name
-    , el None [] <| text <| formatDate content.date
+    , el None [] <| text <| date
     , postBody content.body
     ]
 
@@ -255,16 +242,25 @@ postTable posts =
 postDate : Content -> Piece
 postDate content =
     let
-        formatMonthDay date =
-            "%b %d"
+        monthAndDay =
+            DateFormat.format
+                [ DateFormat.monthNameAbbreviated
+                , DateFormat.text " "
+                , DateFormat.dayOfMonthNumber
+                ]
+                Time.utc
+                content.date
 
-        formatYear date =
-            "%Y"
+        year =
+            DateFormat.format
+                [ DateFormat.yearNumber ]
+                Time.utc
+                content.date
     in
     column None
         [ center, verticalCenter ]
-        [ el None [] <| text <| formatMonthDay content.date
-        , el None [] <| text <| formatYear content.date
+        [ el None [] <| text <| monthAndDay
+        , el None [] <| text <| year
         ]
 
 
