@@ -314,6 +314,9 @@ let writeElm = (file) => (elm) =>
 
 
 
+// Grab the required environment variables,
+// ensuring they have been defined.
+
 let env = reduce([
         'JANDER_BUILD',
         'JANDER_CONTENT',
@@ -352,4 +355,3 @@ readFilesFromDir(env.JANDER_CONTENT)
         console.error(err)
         process.exitCode = 1
     })
-
