@@ -8,17 +8,11 @@ type alias Posts =
     Dict Int Content
 
 
-type alias PostsEntry =
-    ( Int, Content )
-
-
-toEntry : Content -> PostsEntry
-toEntry content =
-    ( content.id, content )
-
-
 posts : Posts
 posts =
-    Content.content
-        |> List.map toEntry
+    contents
+        |> List.map
+            (\content ->
+                ( content.id, content )
+            )
         |> Dict.fromList

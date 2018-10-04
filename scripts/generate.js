@@ -209,7 +209,7 @@ let captures = (string, regex) =>
 // Posts.elm file.
 
 const template = `
-module Content exposing (Content, content)
+module Content exposing (Content, contents)
 
 import Time
 
@@ -221,8 +221,8 @@ type alias Content =
     , body : String
     }
 
-content : List Content
-content = [
+contents : List Content
+contents = [
     {{#each posts}}
     Content
         {{@index}}

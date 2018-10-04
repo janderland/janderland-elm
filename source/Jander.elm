@@ -35,12 +35,9 @@ init : () -> Url -> Nav.Key -> ( Model, Cmd Msg )
 init flags url key =
     let
         page =
-            toPage url
-
-        model =
-            Model key page ""
+            urlToPage url
     in
-    ( model, Cmd.none )
+    ( Model key page "", Cmd.none )
 
 
 
@@ -50,8 +47,8 @@ init flags url key =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        LinkClicked urlRequest ->
-            case urlRequest of
+        LinkClicked request ->
+            case request of
                 Browser.Internal url ->
                     ( model
                     , Nav.pushUrl
@@ -59,17 +56,13 @@ update msg model =
                         (Url.toString url)
                     )
 
-                Browser.External url ->
+                Browser.External href ->
                     ( model
-                    , Nav.load url
+                    , Nav.load href
                     )
 
         UrlChanged url ->
-            let
-                page =
-                    toPage url
-            in
-            ( { model | page = page }
+            ( { model | page = urlToPage url }
             , Cmd.none
             )
 
@@ -92,6 +85,6 @@ subs model =
 -- utility
 
 
-toPage : Url -> Page
-toPage =
+urlToPage : Url -> Page
+urlToPage =
     Route.fromUrl >> Pages.fromRoute

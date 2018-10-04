@@ -1,11 +1,7 @@
-module Route exposing
-    ( Route(..)
-    , fromUrl
-    , toFragment
-    )
+module Route exposing (Route(..), fromUrl, toFragment)
 
 import Debug exposing (log)
-import Maybe
+import Maybe exposing (withDefault)
 import Url exposing (Url)
 import Url.Parser as Parser
     exposing
@@ -35,7 +31,7 @@ fromUrl : Url -> Maybe Route
 fromUrl url =
     let
         path =
-            Maybe.withDefault "" url.fragment
+            url.fragment |> withDefault ""
     in
     { url | path = path, fragment = Nothing }
         |> log "url"
