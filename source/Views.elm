@@ -1,6 +1,7 @@
 module Views exposing (view)
 
 import Browser
+import Chapters exposing (chapters)
 import Content exposing (Content)
 import DateFormat
 import Dict
@@ -10,7 +11,6 @@ import Element.Input as Input
 import Html exposing (Html)
 import Model exposing (..)
 import Pages exposing (Page)
-import Posts exposing (posts)
 import Route
 import Style exposing (..)
 import Style.Border as Border
@@ -84,10 +84,10 @@ view model =
     let
         ( title, children ) =
             case model.page of
-                Pages.Home ->
+                Pages.Cover ->
                     ( "jander.land", home model )
 
-                Pages.Post content ->
+                Pages.Chapter content ->
                     ( content.name, post model content )
 
                 Pages.NotFound ->
@@ -115,7 +115,7 @@ root children =
 home : Model -> List Piece
 home model =
     [ homeBar model.searchQuery
-    , posts |> Dict.values |> List.take 5 |> postTable
+    , chapters |> Dict.values |> List.take 5 |> postTable
     ]
 
 
@@ -184,7 +184,7 @@ topBar : String -> Piece
 topBar searchQuery =
     let
         homeFrag =
-            Route.Home |> Route.toFragment
+            Route.Cover |> Route.toFragment
 
         homeLink =
             link homeFrag <| text "jander.land"
@@ -268,7 +268,7 @@ postSummary : Content -> Piece
 postSummary content =
     let
         postFrag =
-            content.id |> Route.Post |> Route.toFragment
+            content.id |> Route.Chapter |> Route.toFragment
     in
     column None
         [ spacing 10 ]

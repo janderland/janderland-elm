@@ -1,21 +1,21 @@
 module Pages exposing (Page(..), fromRoute)
 
+import Chapters exposing (chapters)
 import Content exposing (Content)
 import Dict
 import Maybe exposing (withDefault)
-import Posts exposing (posts)
 import Route exposing (Route)
 
 
 type Page
-    = Home
-    | Post Content
+    = Cover
+    | Chapter Content
     | NotFound
 
 
-post : Int -> Maybe Page
-post id =
-    Dict.get id posts |> Maybe.map Post
+chapter : Int -> Maybe Page
+chapter id =
+    chapters |> Dict.get id |> Maybe.map Chapter
 
 
 fromRoute : Maybe Route -> Page
@@ -23,10 +23,10 @@ fromRoute =
     Maybe.map
         (\route ->
             case route of
-                Route.Home ->
-                    Home
+                Route.Cover ->
+                    Cover
 
-                Route.Post id ->
-                    post id |> withDefault NotFound
+                Route.Chapter id ->
+                    chapter id |> withDefault NotFound
         )
         >> withDefault NotFound

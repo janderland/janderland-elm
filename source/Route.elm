@@ -15,15 +15,15 @@ import Url.Parser as Parser
 
 
 type Route
-    = Home
-    | Post Int
+    = Cover
+    | Chapter Int
 
 
 parser : Parser (Route -> a) a
 parser =
     Parser.oneOf
-        [ map Home <| top
-        , map Post <| s "post" </> int
+        [ map Cover <| top
+        , map Chapter <| s "chapter" </> int
         ]
 
 
@@ -43,10 +43,10 @@ toFragment route =
     let
         pieces =
             case route of
-                Home ->
+                Cover ->
                     []
 
-                Post id ->
-                    [ "post", String.fromInt id ]
+                Chapter id ->
+                    [ "chapter", String.fromInt id ]
     in
     "#/" ++ String.join "/" pieces

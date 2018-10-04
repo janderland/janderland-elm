@@ -1,15 +1,15 @@
-module Posts exposing (Posts, posts)
+module Chapters exposing (Chapters, chapters)
 
 import Content exposing (..)
 import Dict exposing (Dict)
 
 
-type alias Posts =
+type alias Chapters =
     Dict Int Content
 
 
-posts : Posts
-posts =
+chapters : Chapters
+chapters =
     contents
         |> List.map
             (\content ->
