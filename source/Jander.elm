@@ -2,11 +2,9 @@ module Jander exposing (main)
 
 import Browser
 import Browser.Navigation as Nav
-import Model exposing (..)
 import Pages exposing (Page)
-import Platform.Cmd
-import Platform.Sub
 import Route exposing (Route)
+import State exposing (Model, Msg(..))
 import Url exposing (Url)
 import Views exposing (view)
 

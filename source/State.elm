@@ -1,4 +1,4 @@
-module Model exposing (Model, Msg(..))
+module State exposing (Model, Msg(..))
 
 import Browser exposing (UrlRequest)
 import Browser.Navigation as Nav

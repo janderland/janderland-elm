@@ -1,17 +1,16 @@
 module Views exposing (view)
 
 import Browser
-import Chapters exposing (chapters)
-import Content exposing (Content)
+import Contents exposing (Content, contents)
 import DateFormat
 import Dict
 import Element exposing (..)
 import Element.Attributes exposing (..)
 import Element.Input as Input
 import Html exposing (Html)
-import Model exposing (..)
 import Pages exposing (Page)
 import Route
+import State exposing (Model, Msg(..))
 import Style exposing (..)
 import Style.Border as Border
 import Style.Font as Font
@@ -115,7 +114,7 @@ root children =
 home : Model -> List Piece
 home model =
     [ homeBar model.searchQuery
-    , chapters |> Dict.values |> List.take 5 |> postTable
+    , contents |> Dict.values |> List.take 5 |> postTable
     ]
 
 

@@ -209,9 +209,10 @@ let captures = (string, regex) =>
 // Posts.elm file.
 
 const template = `
-module Content exposing (Content, contents)
+module Contents exposing (Content, contents)
 
 import Time
+import Dict exposing (Dict)
 
 type alias Content =
     { id : Int
@@ -221,22 +222,21 @@ type alias Content =
     , body : String
     }
 
-contents : List Content
-contents = [
-    {{#each posts}}
-    Content
-        {{@index}}
-        "{{this.meta.title}}"
-        (Time.millisToPosix 0)
-        [
-            {{#each this.meta.tags}}
+contents : Dict Int Content
+contents =
+    [ {{#each posts}}
+        ( {{@index}}
+        , Content
+            {{@index}}
+            "{{this.meta.title}}"
+            (Time.millisToPosix 0)
+            [ {{#each this.meta.tags}}
                 "{{this}}"{{#unless @last}},{{/unless}}
-            {{/each}}
-        ]
-        "{{this.body}}"
-        {{#unless @last}},{{/unless}}
-    {{/each}}
-    ]
+            {{/each}} ]
+            "{{this.body}}"
+        ){{#unless @last}},{{/unless}}
+    {{/each}} ]
+    |> Dict.fromList
 `
 
 
