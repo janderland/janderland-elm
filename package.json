@@ -19,6 +19,7 @@
     "handlebars": "^4.0.11",
     "lodash": "^4.17.10",
     "mkdirp-promise": "^5.0.1",
+    "moment": "^2.22.2",
     "string-format": "^2.0.0"
   }
 }

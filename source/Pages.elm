@@ -26,6 +26,6 @@ fromRoute =
         >> withDefault NotFound
 
 
-chapter : Int -> Maybe Page
+chapter : String -> Maybe Page
 chapter id =
     contents |> Dict.get id |> Maybe.map Chapter

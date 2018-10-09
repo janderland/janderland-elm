@@ -5,6 +5,8 @@ let handlebars = require('handlebars')
 let mkdirp = require('mkdirp-promise')
 let format = require('string-format')
 let promise = require('bluebird')
+let crypto = require('crypto')
+let moment = require('moment')
 let path = require('path')
 let fs = require('fs')
 
@@ -29,14 +31,6 @@ let readdir = promise.promisify(fs.readdir)
 /*
  * Utilities
  */
-
-
-
-// Returns a promise for the parsed contents of a
-// JSON file.
-
-let readJson = (file) =>
-  readFile(file, 'utf8').then(JSON.parse);
 
 
 
@@ -112,12 +106,12 @@ let indentLines = (string, tab) =>
 
 // Parses a content file.
 
-let parseFile = (id) => (file) => {
+let parseFile = (file) => {
     let parsed = fromCaptures(
         file, ['meta', 'body'],
         /^(.*)---\n(.*)$/s
     )
-    parsed.meta = parseMeta(id, parsed.meta)
+    parsed.meta = parseMeta(parsed.meta)
     return parsed
 }
 
@@ -125,22 +119,38 @@ let parseFile = (id) => (file) => {
 
 // Parses a content's meta section.
 
-let parseMeta = (id, meta) => {
+let parseMeta = (meta) => {
       let parsed = fromCaptures(
           meta, ['title', 'date', 'tags'],
           /^# ([^\n]+)\n\s*([^\n]+)\n\s*(-.+)$/s
       )
+      parsed.date = parseDate(parsed.date)
       parsed.tags = parseTags(parsed.tags)
-      parsed.id = parseId(id, parsed.title)
+      parsed.id = parseId(parsed)
       return parsed
 }
 
 
 
-let parseId = (id, title) =>
-    has(id, title)
-        ? id[title]
-        : throwErr('Missing ID for '+title)
+// Parses the date string into POSIX time.
+
+let parseDate = (date) => {
+    let m = moment(date)
+    return m.isValid()
+        ? m.valueOf()
+        : throwErr('Failed to parse date '+date)
+}
+
+
+
+// Generates the content's ID by hashing the
+// title and date.
+
+let parseId = (parsed) => {
+    let hash = crypto.createHash('sha256')
+    hash.update(parsed.title + parsed.date)
+    return hash.digest('hex').substring(0,8)
+}
 
 
 
@@ -228,21 +238,21 @@ import Time
 import Dict exposing (Dict)
 
 type alias Content =
-    { id : Int
+    { id : String
     , name : String
     , date : Time.Posix
     , tags : List String
     , body : String
     }
 
-contents : Dict Int Content
+contents : Dict String Content
 contents =
     [ {{#each posts}}
-        ( {{this.meta.id}}
+        ( "{{this.meta.id}}"
         , Content
-            {{this.meta.id}}
+            "{{this.meta.id}}"
             "{{this.meta.title}}"
-            (Time.millisToPosix 0)
+            (Time.millisToPosix {{this.meta.date}})
             [ {{#each this.meta.tags}}
                 "{{this}}"{{#unless @last}},{{/unless}}
             {{/each}} ]
@@ -348,25 +358,22 @@ let env = reduce([
 
 
 
-readJson(env.JANDER_ID).then((id) =>
+readFilesFromDir(env.JANDER_CONTENT)
 
-        readFilesFromDir(env.JANDER_CONTENT)
+    .then(log('Parsing content'))
+    .map(parseFile)
 
-        .then(log('Parsing content'))
-        .map(parseFile(id))
+    .then(log('Generating elm'))
+    .then(generateElm)
 
-        .then(log('Generating elm'))
-        .then(generateElm)
+    .then(log('Formatting elm'))
+    .then(formatElm)
 
-        .then(log('Formatting elm'))
-        .then(formatElm)
-
-        .then(log('Writing file'))
-        .then(writeElm(path.join(
-            env.JANDER_BUILD,
-            env.JANDER_GENERATED
-        )))
-    )
+    .then(log('Writing file'))
+    .then(writeElm(path.join(
+        env.JANDER_BUILD,
+        env.JANDER_GENERATED
+    )))
 
     .catch((err) => {
         console.error(err)

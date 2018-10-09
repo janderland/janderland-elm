@@ -7,7 +7,7 @@ import Url.Parser as Parser
     exposing
         ( (</>)
         , Parser
-        , int
+        , string
         , map
         , s
         , top
@@ -16,14 +16,14 @@ import Url.Parser as Parser
 
 type Route
     = Cover
-    | Chapter Int
+    | Chapter String
 
 
 parser : Parser (Route -> a) a
 parser =
     Parser.oneOf
         [ map Cover <| top
-        , map Chapter <| s "chapter" </> int
+        , map Chapter <| s "chapter" </> string
         ]
 
 
@@ -47,6 +47,6 @@ toFragment route =
                     []
 
                 Chapter id ->
-                    [ "chapter", String.fromInt id ]
+                    [ "chapter", id ]
     in
     "#/" ++ String.join "/" pieces
