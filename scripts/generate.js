@@ -16,7 +16,8 @@ let {
     every,
     range,
     tail,
-    set
+    set,
+    has
 } = require('lodash')
 
 let writeFile = promise.promisify(fs.writeFile)
@@ -28,6 +29,14 @@ let readdir = promise.promisify(fs.readdir)
 /*
  * Utilities
  */
+
+
+
+// Returns a promise for the parsed contents of a
+// JSON file.
+
+let readJson = (file) =>
+  readFile(file, 'utf8').then(JSON.parse);
 
 
 
@@ -103,31 +112,35 @@ let indentLines = (string, tab) =>
 
 // Parses a content file.
 
-let parseFile = (file) =>
-    update(
-        fromCaptures(
-            file,
-            ['meta', 'body'],
-            /^(.*)---\n(.*)$/s
-        ),
-        'meta',
-        parseMeta
+let parseFile = (id) => (file) => {
+    let parsed = fromCaptures(
+        file, ['meta', 'body'],
+        /^(.*)---\n(.*)$/s
     )
+    parsed.meta = parseMeta(id, parsed.meta)
+    return parsed
+}
 
 
 
 // Parses a content's meta section.
 
-let parseMeta = (meta) =>
-    update(
-        fromCaptures(
-            meta,
-            ['title', 'date', 'tags'],
-            /^# ([^\n]+)\n\s*([^\n]+)\n\s*(-.+)$/s
-        ),
-        'tags',
-        parseTags
-    )
+let parseMeta = (id, meta) => {
+      let parsed = fromCaptures(
+          meta, ['title', 'date', 'tags'],
+          /^# ([^\n]+)\n\s*([^\n]+)\n\s*(-.+)$/s
+      )
+      parsed.tags = parseTags(parsed.tags)
+      parsed.id = parseId(id, parsed.title)
+      return parsed
+}
+
+
+
+let parseId = (id, title) =>
+    has(id, title)
+        ? id[title]
+        : throwErr('Missing ID for '+title)
 
 
 
@@ -225,9 +238,9 @@ type alias Content =
 contents : Dict Int Content
 contents =
     [ {{#each posts}}
-        ( {{@index}}
+        ( {{this.meta.id}}
         , Content
-            {{@index}}
+            {{this.meta.id}}
             "{{this.meta.title}}"
             (Time.millisToPosix 0)
             [ {{#each this.meta.tags}}
@@ -318,6 +331,7 @@ let writeElm = (file) => (elm) =>
 // ensuring they have been defined.
 
 let env = reduce([
+        'JANDER_ID',
         'JANDER_BUILD',
         'JANDER_CONTENT',
         'JANDER_GENERATED'
@@ -334,22 +348,25 @@ let env = reduce([
 
 
 
-readFilesFromDir(env.JANDER_CONTENT)
+readJson(env.JANDER_ID).then((id) =>
 
-    .then(log('Parsing content'))
-    .map(parseFile)
+        readFilesFromDir(env.JANDER_CONTENT)
 
-    .then(log('Generating elm'))
-    .then(generateElm)
+        .then(log('Parsing content'))
+        .map(parseFile(id))
 
-    .then(log('Formatting elm'))
-    .then(formatElm)
+        .then(log('Generating elm'))
+        .then(generateElm)
 
-    .then(log('Writing file'))
-    .then(writeElm(path.join(
-        env.JANDER_BUILD,
-        env.JANDER_GENERATED
-    )))
+        .then(log('Formatting elm'))
+        .then(formatElm)
+
+        .then(log('Writing file'))
+        .then(writeElm(path.join(
+            env.JANDER_BUILD,
+            env.JANDER_GENERATED
+        )))
+    )
 
     .catch((err) => {
         console.error(err)
