@@ -54,32 +54,32 @@ root children =
 
 home : Model -> List (Element Msg)
 home model =
-    [ homeBar model.searchQuery
+    [ homeBar model
     , contents |> Dict.values |> List.take 5 |> postTable
     ]
 
 
-homeBar : String -> Element Msg
-homeBar searchQuery =
+homeBar : Model -> Element Msg
+homeBar model =
     column
         [ centerX, Font.center ]
         [ el [ Font.size 100, Font.bold ] <| text "jander.land"
-        , el [ centerX ] <| homeSearch searchQuery
+        , el [ centerX ] <| homeSearch model
         ]
 
 
-homeSearch : String -> Element Msg
-homeSearch query =
+homeSearch : Model -> Element Msg
+homeSearch model =
     Input.text
         [ width <| px 200
+        , Border.width 1
         , paddingXY 5 7
         , Font.center
-        , Border.width 1
         ]
-        { onChange = SearchQuery
-        , placeholder = Just <| Input.placeholder [] (text "search")
+        { placeholder = Just <| Input.placeholder [] <| text "search"
         , label = Input.labelHidden "search"
-        , text = query
+        , text = model.searchQuery
+        , onChange = SearchQuery
         }
 
 
@@ -91,34 +91,34 @@ post : Model -> Content -> List (Element Msg)
 post model content =
     let
         date =
-            DateFormat.format
-                [ DateFormat.monthNameFull
-                , DateFormat.text " "
-                , DateFormat.dayOfMonthNumber
-                , DateFormat.text ", "
-                , DateFormat.yearNumber
-                ]
-                Time.utc
-                content.date
+            content.date
+                |> DateFormat.format
+                    [ DateFormat.monthNameFull
+                    , DateFormat.text " "
+                    , DateFormat.dayOfMonthNumber
+                    , DateFormat.text ", "
+                    , DateFormat.yearNumber
+                    ]
+                    Time.utc
     in
-    [ topBar model.searchQuery
+    [ topBar model
     , el [ Font.size 80, Font.bold ] <| text content.name
     , el [] <| text <| date
-    , postBody content.body
+    , postBody content
     ]
 
 
-postBody : String -> Element Msg
-postBody body =
-    paragraph [] <| [ text body ]
+postBody : Content -> Element Msg
+postBody content =
+    paragraph [] <| [ text content.body ]
 
 
 
 -- top bar
 
 
-topBar : String -> Element Msg
-topBar searchQuery =
+topBar : Model -> Element Msg
+topBar model =
     let
         homeFrag =
             Route.Cover |> Route.toFragment
@@ -126,21 +126,24 @@ topBar searchQuery =
         homeLink =
             link [] { url = homeFrag, label = text "jander.land" }
     in
-    row
-        [ width <| fill ]
-        [ el [ width <| fillPortion 1, Font.size 30, Font.bold, Font.alignLeft ] <| homeLink
-        , el [ width <| fillPortion 1 ] <| topSearch searchQuery
+    row [ width <| fill ]
+        [ el [ width <| fillPortion 1, Font.size 30, Font.bold, Font.alignLeft ] homeLink
+        , el [ width <| fillPortion 1 ] <| topSearch model
         ]
 
 
-topSearch : String -> Element Msg
-topSearch query =
+topSearch : Model -> Element Msg
+topSearch model =
     Input.text
-        [ width (fill |> maximum 200), alignRight, paddingXY 5 7, Font.alignRight, Border.width 1 ]
-        { onChange = SearchQuery
-        , text = query
+        [ width (fill |> maximum 200)
+        , Border.width 1
+        , paddingXY 5 7
+        , alignRight
+        ]
+        { placeholder = Just <| Input.placeholder [ Font.alignRight ] <| text "search"
         , label = Input.labelHidden "search"
-        , placeholder = Just <| Input.placeholder [ Font.alignRight ] (text "search")
+        , onChange = SearchQuery
+        , text = model.searchQuery
         }
 
 
@@ -150,10 +153,7 @@ topSearch query =
 
 notFound : Model -> List (Element Msg)
 notFound model =
-    [ row
-        []
-        [ el [ centerX ] <| text "not found" ]
-    ]
+    [ row [] [ el [ centerX ] <| text "not found" ] ]
 
 
 
@@ -162,8 +162,7 @@ notFound model =
 
 postTable : List Content -> Element Msg
 postTable contents =
-    table
-        [ spacing 30 ]
+    table [ spacing 30 ]
         { data = contents
         , columns =
             [ { header = text "Date"
@@ -182,19 +181,19 @@ postDate : Content -> Element Msg
 postDate content =
     let
         monthAndDay =
-            DateFormat.format
-                [ DateFormat.monthNameAbbreviated
-                , DateFormat.text " "
-                , DateFormat.dayOfMonthNumber
-                ]
-                Time.utc
-                content.date
+            content.date
+                |> DateFormat.format
+                    [ DateFormat.monthNameAbbreviated
+                    , DateFormat.text " "
+                    , DateFormat.dayOfMonthNumber
+                    ]
+                    Time.utc
 
         year =
-            DateFormat.format
-                [ DateFormat.yearNumber ]
-                Time.utc
-                content.date
+            content.date
+                |> DateFormat.format
+                    [ DateFormat.yearNumber ]
+                    Time.utc
     in
     column
         [ centerY ]
@@ -209,13 +208,15 @@ postSummary content =
         postFrag =
             content.id |> Route.Chapter |> Route.toFragment
     in
-    column
-        [ spacing 10 ]
+    column [ spacing 10 ]
         [ el [ Font.size 25 ] <| link [] { url = postFrag, label = text content.name }
-        , el [] <| text <| excerpt content.body ++ "..."
+        , el [] <| text <| excerpt content ++ "..."
         ]
 
 
-excerpt : String -> String
-excerpt =
-    String.words >> List.take 20 >> String.join " "
+excerpt : Content -> String
+excerpt content =
+    content.body
+        |> String.words
+        |> List.take 20
+        |> String.join " "
