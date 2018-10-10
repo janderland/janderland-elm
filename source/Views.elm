@@ -16,6 +16,25 @@ import Time
 
 
 
+-- scaling
+
+
+ratio : Float
+ratio =
+    5 / 4
+
+
+base : Float
+base =
+    16
+
+
+scaled : Int -> Int
+scaled =
+    round << modular base ratio
+
+
+
 -- root view
 
 
@@ -39,11 +58,12 @@ view model =
 
 root : List (Element Msg) -> Element Msg
 root =
-    el [ centerX, explain Debug.todo ]
+    el [ centerX ]
         << column
-            [ width <| px 800
+            [ width <| px <| scaled 18
+            , Font.size <| scaled 1
+            , spacing <| scaled 3
             , paddingXY 0 20
-            , spacing 20
             ]
 
 
@@ -62,7 +82,7 @@ homeBar : Model -> Element Msg
 homeBar model =
     let
         title =
-            el [ Font.size 100, Font.bold ] <| text "jander.land"
+            el [ Font.size <| scaled 10, Font.bold ] <| text "jander.land"
     in
     column [ centerX ] [ title ]
 
@@ -74,20 +94,19 @@ homeBar model =
 post : Model -> Content -> List (Element Msg)
 post model content =
     let
-        date =
-            content.date
-                |> DateFormat.format
-                    [ DateFormat.monthNameFull
-                    , DateFormat.text " "
-                    , DateFormat.dayOfMonthNumber
-                    , DateFormat.text ", "
-                    , DateFormat.yearNumber
-                    ]
-                    Time.utc
+        formatDate =
+            DateFormat.format
+                [ DateFormat.monthNameFull
+                , DateFormat.text " "
+                , DateFormat.dayOfMonthNumber
+                , DateFormat.text ", "
+                , DateFormat.yearNumber
+                ]
+                Time.utc
     in
     [ topBar model
-    , el [ Font.size 80, Font.bold ] <| text content.name
-    , el [] <| text date
+    , el [ Font.size <| scaled 8, Font.bold ] <| text content.name
+    , el [ Font.size <| scaled -1 ] <| text <| formatDate content.date
     , postBody content
     ]
 
@@ -111,7 +130,7 @@ topBar model =
             link [] { url = coverFrag, label = text "jander.land" }
     in
     row [ width fill ]
-        [ el [ Font.size 30, Font.bold, Font.alignLeft ] coverLink ]
+        [ el [ Font.size <| scaled 3, Font.bold, Font.alignLeft ] coverLink ]
 
 
 
@@ -120,7 +139,7 @@ topBar model =
 
 notFound : Model -> List (Element Msg)
 notFound model =
-    [ row [] [ el [ centerX ] <| text "not found" ] ]
+    [ row [] [ el [ centerX, Font.size <| scaled 10 ] <| text "not found" ] ]
 
 
 
@@ -129,7 +148,7 @@ notFound model =
 
 postTable : List Content -> Element Msg
 postTable contents =
-    table [ spacing 30 ]
+    table [ spacing <| scaled 3 ]
         { data = contents
         , columns =
             [ { header = text "Date"
@@ -174,8 +193,8 @@ postSummary content =
         postFrag =
             content.id |> Route.Chapter |> Route.toFragment
     in
-    column [ spacing 10 ]
-        [ link [ Font.size 25 ] { url = postFrag, label = text content.name }
+    column [ spacing <| scaled -1 ]
+        [ link [ Font.size <| scaled 3 ] { url = postFrag, label = text content.name }
         , paragraph [] [ text <| excerpt content ++ "..." ]
         ]
 
