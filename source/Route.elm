@@ -7,9 +7,9 @@ import Url.Parser as Parser
     exposing
         ( (</>)
         , Parser
-        , string
         , map
         , s
+        , string
         , top
         )
 
