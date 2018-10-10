@@ -5,73 +5,14 @@ import Contents exposing (Content, contents)
 import DateFormat
 import Dict
 import Element exposing (..)
-import Element.Attributes exposing (..)
+import Element.Border as Border
+import Element.Font as Font
 import Element.Input as Input
 import Html exposing (Html)
 import Pages exposing (Page)
 import Route
 import State exposing (Model, Msg(..))
-import Style exposing (..)
-import Style.Border as Border
-import Style.Font as Font
 import Time
-
-
-
--- styles
-
-
-type Styles
-    = None
-    | Bar
-    | Title
-    | HomeTitle
-    | HomeSearch
-    | TopTitle
-    | TopSearch
-    | PostTableLink
-
-
-type Variations
-    = VariationsPlaceholder
-
-
-type alias Piece =
-    Element Styles Variations Msg
-
-
-stylesheet : StyleSheet Styles Variations
-stylesheet =
-    styleSheet
-        [ style None []
-        , style Bar
-            [ Font.center
-            ]
-        , style Title
-            [ Font.size 80
-            , Font.bold
-            ]
-        , style HomeTitle
-            [ Font.size 100
-            , Font.bold
-            ]
-        , style HomeSearch
-            [ Font.center
-            , Border.all 1
-            ]
-        , style TopTitle
-            [ Font.size 30
-            , Font.alignLeft
-            , Font.bold
-            ]
-        , style TopSearch
-            [ Font.alignRight
-            , Border.all 1
-            ]
-        , style PostTableLink
-            [ Font.size 25
-            ]
-        ]
 
 
 
@@ -93,13 +34,13 @@ view model =
                     ( "not found", notFound model )
     in
     Browser.Document title
-        [ root children |> layout stylesheet ]
+        [ root children |> layout [] ]
 
 
-root : List Piece -> Piece
+root : List (Element Msg) -> Element Msg
 root children =
-    el None [ center ] <|
-        column None
+    el [ centerX ] <|
+        column
             [ width <| px 800
             , paddingXY 0 20
             , spacing 20
@@ -111,37 +52,34 @@ root children =
 -- home page
 
 
-home : Model -> List Piece
+home : Model -> List (Element Msg)
 home model =
     [ homeBar model.searchQuery
     , contents |> Dict.values |> List.take 5 |> postTable
     ]
 
 
-homeBar : String -> Piece
+homeBar : String -> Element Msg
 homeBar searchQuery =
-    column Bar
-        [ center ]
-        [ el HomeTitle [] <| text "jander.land"
-        , el None [] <| homeSearch searchQuery
+    column
+        [ centerX, Font.center ]
+        [ el [ Font.size 100, Font.bold ] <| text "jander.land"
+        , el [ centerX ] <| homeSearch searchQuery
         ]
 
 
-homeSearch : String -> Piece
+homeSearch : String -> Element Msg
 homeSearch query =
-    let
-        label =
-            Input.placeholder
-                { label = Input.hiddenLabel "search"
-                , text = "search"
-                }
-    in
-    Input.text HomeSearch
-        [ width <| px 200, paddingXY 5 7 ]
+    Input.text
+        [ width <| px 200
+        , paddingXY 5 7
+        , Font.center
+        , Border.width 1
+        ]
         { onChange = SearchQuery
-        , value = query
-        , label = label
-        , options = []
+        , placeholder = Just <| Input.placeholder [] (text "search")
+        , label = Input.labelHidden "search"
+        , text = query
         }
 
 
@@ -149,67 +87,60 @@ homeSearch query =
 -- post page
 
 
-post : Model -> Content -> List Piece
+post : Model -> Content -> List (Element Msg)
 post model content =
     let
         date =
             DateFormat.format
-                [ DateFormat.monthNameAbbreviated
+                [ DateFormat.monthNameFull
                 , DateFormat.text " "
                 , DateFormat.dayOfMonthNumber
-                , DateFormat.text " "
+                , DateFormat.text ", "
                 , DateFormat.yearNumber
                 ]
                 Time.utc
                 content.date
     in
     [ topBar model.searchQuery
-    , el Title [] <| text content.name
-    , el None [] <| text <| date
+    , el [ Font.size 80, Font.bold ] <| text content.name
+    , el [] <| text <| date
     , postBody content.body
     ]
 
 
-postBody : String -> Piece
+postBody : String -> Element Msg
 postBody body =
-    paragraph None [] <| [ text body ]
+    paragraph [] <| [ text body ]
 
 
 
 -- top bar
 
 
-topBar : String -> Piece
+topBar : String -> Element Msg
 topBar searchQuery =
     let
         homeFrag =
             Route.Cover |> Route.toFragment
 
         homeLink =
-            link homeFrag <| text "jander.land"
+            link [] { url = homeFrag, label = text "jander.land" }
     in
-    row Bar
-        [ verticalCenter ]
-        [ el TopTitle [ width <| fillPortion 1 ] <| homeLink
-        , el None [ width <| fillPortion 1 ] <| topSearch searchQuery
+    row
+        [ width <| fill ]
+        [ el [ width <| fillPortion 1, Font.size 30, Font.bold, Font.alignLeft ] <| homeLink
+        , el [ width <| fillPortion 1 ] <| topSearch searchQuery
         ]
 
 
-topSearch : String -> Piece
+topSearch : String -> Element Msg
 topSearch query =
-    let
-        label =
-            Input.placeholder
-                { label = Input.hiddenLabel "search"
-                , text = "search"
-                }
-    in
-    Input.text TopSearch
-        [ maxWidth <| px 200, paddingXY 5 7, alignRight ]
+    Input.text
+        [ width (fill |> maximum 200), alignRight, paddingXY 5 7, Font.alignRight, Border.width 1 ]
         { onChange = SearchQuery
-        , value = query
-        , label = label
-        , options = []
+        , text = query
+        , label = Input.labelHidden "search"
+        , placeholder = Just <| Input.placeholder [ Font.alignRight ] (text "search")
         }
 
 
@@ -217,11 +148,11 @@ topSearch query =
 -- not found page
 
 
-notFound : Model -> List Piece
+notFound : Model -> List (Element Msg)
 notFound model =
-    [ row None
-        [ center ]
-        [ el Title [] <| text "not found" ]
+    [ row
+        []
+        [ el [ centerX ] <| text "not found" ]
     ]
 
 
@@ -229,16 +160,25 @@ notFound model =
 -- post table
 
 
-postTable : List Content -> Piece
-postTable posts =
-    table None
+postTable : List Content -> Element Msg
+postTable contents =
+    table
         [ spacing 30 ]
-        [ List.map postDate posts
-        , List.map postSummary posts
-        ]
+        { data = contents
+        , columns =
+            [ { header = text "Date"
+              , width = fill
+              , view = postDate
+              }
+            , { header = text "Summary"
+              , width = fill
+              , view = postSummary
+              }
+            ]
+        }
 
 
-postDate : Content -> Piece
+postDate : Content -> Element Msg
 postDate content =
     let
         monthAndDay =
@@ -256,23 +196,23 @@ postDate content =
                 Time.utc
                 content.date
     in
-    column None
-        [ center, verticalCenter ]
-        [ el None [] <| text <| monthAndDay
-        , el None [] <| text <| year
+    column
+        [ centerY ]
+        [ el [ centerX ] <| text <| monthAndDay
+        , el [ centerX ] <| text <| year
         ]
 
 
-postSummary : Content -> Piece
+postSummary : Content -> Element Msg
 postSummary content =
     let
         postFrag =
             content.id |> Route.Chapter |> Route.toFragment
     in
-    column None
+    column
         [ spacing 10 ]
-        [ el PostTableLink [] <| link postFrag <| text content.name
-        , el None [] <| text <| excerpt content.body ++ "..."
+        [ el [ Font.size 25 ] <| link [] { url = postFrag, label = text content.name }
+        , el [] <| text <| excerpt content.body ++ "..."
         ]
 
 

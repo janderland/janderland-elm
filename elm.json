@@ -11,7 +11,7 @@
             "elm/html": "1.0.0",
             "elm/time": "1.0.0",
             "elm/url": "1.0.0",
-            "mdgriffith/style-elements": "5.0.1",
+            "mdgriffith/elm-ui": "1.1.0",
             "ryannhg/date-format": "2.0.1"
         },
         "indirect": {
