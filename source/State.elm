@@ -9,11 +9,9 @@ import Url exposing (Url)
 type alias Model =
     { key : Nav.Key
     , page : Page
-    , searchQuery : String
     }
 
 
 type Msg
     = UrlChanged Url
     | LinkClicked UrlRequest
-    | SearchQuery String

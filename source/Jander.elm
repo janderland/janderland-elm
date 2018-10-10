@@ -26,11 +26,8 @@ init flags url key =
     let
         page =
             urlToPage url
-
-        query =
-            ""
     in
-    ( Model key page query
+    ( Model key page
     , Cmd.none
     )
 
@@ -52,11 +49,6 @@ update msg model =
 
         UrlChanged url ->
             ( { model | page = urlToPage url }
-            , Cmd.none
-            )
-
-        SearchQuery searchQuery ->
-            ( { model | searchQuery = searchQuery }
             , Cmd.none
             )
 

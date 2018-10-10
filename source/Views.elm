@@ -38,14 +38,13 @@ view model =
 
 
 root : List (Element Msg) -> Element Msg
-root children =
-    el [ centerX ] <|
-        column
+root =
+    el [ centerX, explain Debug.todo ]
+        << column
             [ width <| px 800
             , paddingXY 0 20
             , spacing 20
             ]
-            children
 
 
 
@@ -61,26 +60,11 @@ home model =
 
 homeBar : Model -> Element Msg
 homeBar model =
-    column
-        [ centerX, Font.center ]
-        [ el [ Font.size 100, Font.bold ] <| text "jander.land"
-        , el [ centerX ] <| homeSearch model
-        ]
-
-
-homeSearch : Model -> Element Msg
-homeSearch model =
-    Input.text
-        [ width <| px 200
-        , Border.width 1
-        , paddingXY 5 7
-        , Font.center
-        ]
-        { placeholder = Just <| Input.placeholder [] <| text "search"
-        , label = Input.labelHidden "search"
-        , text = model.searchQuery
-        , onChange = SearchQuery
-        }
+    let
+        title =
+            el [ Font.size 100, Font.bold ] <| text "jander.land"
+    in
+    column [ centerX ] [ title ]
 
 
 
@@ -103,14 +87,14 @@ post model content =
     in
     [ topBar model
     , el [ Font.size 80, Font.bold ] <| text content.name
-    , el [] <| text <| date
+    , el [] <| text date
     , postBody content
     ]
 
 
 postBody : Content -> Element Msg
 postBody content =
-    paragraph [] <| [ text content.body ]
+    paragraph [] [ text content.body ]
 
 
 
@@ -120,31 +104,14 @@ postBody content =
 topBar : Model -> Element Msg
 topBar model =
     let
-        homeFrag =
+        coverFrag =
             Route.Cover |> Route.toFragment
 
-        homeLink =
-            link [] { url = homeFrag, label = text "jander.land" }
+        coverLink =
+            link [] { url = coverFrag, label = text "jander.land" }
     in
-    row [ width <| fill ]
-        [ el [ width <| fillPortion 1, Font.size 30, Font.bold, Font.alignLeft ] homeLink
-        , el [ width <| fillPortion 1 ] <| topSearch model
-        ]
-
-
-topSearch : Model -> Element Msg
-topSearch model =
-    Input.text
-        [ width (fill |> maximum 200)
-        , Border.width 1
-        , paddingXY 5 7
-        , alignRight
-        ]
-        { placeholder = Just <| Input.placeholder [ Font.alignRight ] <| text "search"
-        , label = Input.labelHidden "search"
-        , onChange = SearchQuery
-        , text = model.searchQuery
-        }
+    row [ width fill ]
+        [ el [ Font.size 30, Font.bold, Font.alignLeft ] coverLink ]
 
 
 
@@ -195,10 +162,9 @@ postDate content =
                     [ DateFormat.yearNumber ]
                     Time.utc
     in
-    column
-        [ centerY ]
-        [ el [ centerX ] <| text <| monthAndDay
-        , el [ centerX ] <| text <| year
+    column [ centerY ]
+        [ el [ centerX ] <| text monthAndDay
+        , el [ centerX ] <| text year
         ]
 
 
