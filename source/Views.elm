@@ -133,7 +133,7 @@ postTable contents =
         { data = contents
         , columns =
             [ { header = text "Date"
-              , width = fill
+              , width = shrink
               , view = postDate
               }
             , { header = text "Summary"
@@ -175,8 +175,8 @@ postSummary content =
             content.id |> Route.Chapter |> Route.toFragment
     in
     column [ spacing 10 ]
-        [ el [ Font.size 25 ] <| link [] { url = postFrag, label = text content.name }
-        , el [] <| text <| excerpt content ++ "..."
+        [ link [ Font.size 25 ] { url = postFrag, label = text content.name }
+        , paragraph [] [ text <| excerpt content ++ "..." ]
         ]
 
 
