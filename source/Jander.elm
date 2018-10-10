@@ -9,10 +9,6 @@ import Url exposing (Url)
 import Views exposing (view)
 
 
-
--- main
-
-
 main : Program () Model Msg
 main =
     Browser.application
@@ -25,21 +21,18 @@ main =
         }
 
 
-
--- init
-
-
 init : () -> Url -> Nav.Key -> ( Model, Cmd Msg )
 init flags url key =
     let
         page =
             urlToPage url
+
+        query =
+            ""
     in
-    ( Model key page "", Cmd.none )
-
-
-
--- update
+    ( Model key page query
+    , Cmd.none
+    )
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -49,9 +42,7 @@ update msg model =
             case request of
                 Browser.Internal url ->
                     ( model
-                    , Nav.pushUrl
-                        model.key
-                        (Url.toString url)
+                    , Nav.pushUrl model.key <| Url.toString url
                     )
 
                 Browser.External href ->
@@ -70,17 +61,9 @@ update msg model =
             )
 
 
-
--- subscriptions
-
-
 subs : Model -> Sub Msg
 subs model =
     Sub.none
-
-
-
--- utility
 
 
 urlToPage : Url -> Page
