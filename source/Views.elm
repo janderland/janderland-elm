@@ -13,6 +13,7 @@ import Pages exposing (Page)
 import Route
 import State exposing (Model, Msg(..))
 import Time
+import Tuple
 
 
 
@@ -74,7 +75,10 @@ root =
 home : Model -> List (Element Msg)
 home model =
     [ homeBar model
-    , contents |> Dict.values |> List.take 5 |> postTable
+    , contents
+        |> Dict.values
+        |> List.take 5
+        |> postTable
     ]
 
 
@@ -82,18 +86,20 @@ homeBar : Model -> Element Msg
 homeBar model =
     let
         title =
-            el [ Font.size <| scaled 10, Font.bold ] <| text "jander.land"
+            el [ Font.size <| scaled 10, Font.bold ]
+                (text "jander.land")
 
-        (width, height) =
-            model.size
+        ( width, height ) =
+            ( String.fromInt <| Tuple.first model.size
+            , String.fromInt <| Tuple.second model.size
+            )
 
         size =
-            "(" ++ String.fromInt width ++ ", " ++ String.fromInt height ++ ")"
+            el [ centerX ]
+                (text <| "(" ++ width ++ ", " ++ height ++ ")")
     in
     column [ centerX ]
-    [ title
-    , el [ centerX ] <| text size
-    ]
+        [ title, size ]
 
 
 
@@ -136,10 +142,16 @@ topBar model =
             Route.Cover |> Route.toFragment
 
         coverLink =
-            link [] { url = coverFrag, label = text "jander.land" }
+            link
+                [ Font.size <| scaled 3
+                , Font.alignLeft
+                , Font.bold
+                ]
+                { url = coverFrag
+                , label = text "jander.land"
+                }
     in
-    row [ width fill ]
-        [ el [ Font.size <| scaled 3, Font.bold, Font.alignLeft ] coverLink ]
+    row [ width fill ] [ coverLink ]
 
 
 
@@ -147,8 +159,12 @@ topBar model =
 
 
 notFound : Model -> List (Element Msg)
-notFound model =
-    [ row [] [ el [ centerX, Font.size <| scaled 10 ] <| text "not found" ] ]
+notFound _ =
+    [ row []
+        [ el [ centerX, Font.size <| scaled 10 ]
+            (text "not found")
+        ]
+    ]
 
 
 
@@ -201,11 +217,19 @@ postSummary content =
     let
         postFrag =
             content.id |> Route.Chapter |> Route.toFragment
+
+        title =
+            link [ Font.size <| scaled 3 ]
+                { url = postFrag
+                , label = text content.name
+                }
+
+        summary =
+            paragraph []
+                [ text <| excerpt content ++ "..." ]
     in
     column [ spacing <| scaled -1 ]
-        [ link [ Font.size <| scaled 3 ] { url = postFrag, label = text content.name }
-        , paragraph [] [ text <| excerpt content ++ "..." ]
-        ]
+        [ title, summary ]
 
 
 excerpt : Content -> String
