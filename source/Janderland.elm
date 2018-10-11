@@ -1,8 +1,8 @@
 module Janderland exposing (main)
 
 import Browser
-import Browser.Navigation as Nav
 import Browser.Events as Events
+import Browser.Navigation as Nav
 import Pages exposing (Page)
 import Route exposing (Route)
 import State exposing (Model, Msg(..))
@@ -10,7 +10,12 @@ import Url exposing (Url)
 import Views exposing (view)
 
 
-main : Program (Int, Int) Model Msg
+type alias Flags =
+    { size : ( Int, Int )
+    }
+
+
+main : Program Flags Model Msg
 main =
     Browser.application
         { init = init
@@ -22,14 +27,13 @@ main =
         }
 
 
-init : (Int, Int) -> Url -> Nav.Key -> ( Model, Cmd Msg )
-init size url key =
+init : Flags -> Url -> Nav.Key -> ( Model, Cmd Msg )
+init flags url key =
     let
         page =
             urlToPage url
-
     in
-    ( Model key page size
+    ( Model key page flags.size
     , Cmd.none
     )
 
@@ -55,7 +59,7 @@ update msg model =
             )
 
         WindowResize width height ->
-            ( { model | size = (width, height) }
+            ( { model | size = ( width, height ) }
             , Cmd.none
             )
 
