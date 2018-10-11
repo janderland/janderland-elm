@@ -341,7 +341,6 @@ let writeElm = (file) => (elm) =>
 // ensuring they have been defined.
 
 let env = reduce([
-        'JANDER_ID',
         'JANDER_BUILD',
         'JANDER_CONTENT',
         'JANDER_GENERATED'
