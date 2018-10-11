@@ -34,7 +34,6 @@ fromUrl url =
             url.fragment |> withDefault ""
     in
     { url | path = path, fragment = Nothing }
-        |> log "url"
         |> Parser.parse parser
 
 
