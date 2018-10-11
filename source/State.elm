@@ -1,4 +1,4 @@
-module State exposing (Model, Msg(..))
+module State exposing (Layout(..), Model, Msg(..))
 
 import Browser exposing (UrlRequest)
 import Browser.Navigation as Nav
@@ -6,10 +6,16 @@ import Pages exposing (Page)
 import Url exposing (Url)
 
 
+type Layout
+    = Full
+    | Mini
+
+
 type alias Model =
     { key : Nav.Key
     , page : Page
-    , size : ( Int, Int )
+    , width : Int
+    , layout : Layout
     }
 
 

@@ -1,4 +1,4 @@
-module Views exposing (view)
+module Views exposing (capWidth, layoutFromWidth, view)
 
 import Browser
 import Contents exposing (Content, contents)
@@ -11,7 +11,7 @@ import Element.Input as Input
 import Html exposing (Html)
 import Pages exposing (Page)
 import Route
-import State exposing (Model, Msg(..))
+import State exposing (Layout(..), Model, Msg(..))
 import Time
 import Tuple
 
@@ -35,6 +35,30 @@ scaled =
     round << modular base ratio
 
 
+maxWidth : Int
+maxWidth =
+    scaled 18
+
+
+capWidth : Int -> Int
+capWidth width =
+    min maxWidth width
+
+
+miniWidth : Int
+miniWidth =
+    toFloat maxWidth * (4 / 5) |> round
+
+
+layoutFromWidth : Int -> Layout
+layoutFromWidth width =
+    if width <= miniWidth then
+        Mini
+
+    else
+        Full
+
+
 
 -- View & Root
 
@@ -54,15 +78,15 @@ view model =
                     ( "not found", notFoundPage model )
     in
     Browser.Document title
-        [ root children |> layout [] ]
+        [ root model children |> layout [] ]
 
 
-root : List (Element Msg) -> Element Msg
-root =
-    el [ centerX, explain Debug.todo ]
+root : Model -> List (Element Msg) -> Element Msg
+root model =
+    el [ centerX ]
         << column
-            [ width (fill |> (maximum <| scaled 18))
-            , paddingXY 0 <| scaled 2
+            [ width <| px model.width
+            , paddingXY (scaled -1) (scaled 2)
             , Font.size <| scaled 1
             , spacing <| scaled 3
             ]
@@ -75,23 +99,25 @@ root =
 coverBar : Model -> Element Msg
 coverBar model =
     let
-        ( width, height ) =
-            ( String.fromInt <| Tuple.first model.size
-            , String.fromInt <| Tuple.second model.size
-            )
+        width =
+            String.fromInt <| model.width
 
+        -- This case here could be done with a paragraph if
+        -- there was some way to allow linebreaking mid-word
         title =
-            el [ Font.size <| scaled 10, Font.bold ]
-                (text "jander.land")
+            case model.layout of
+                Full ->
+                    el [ Font.size <| scaled 10, Font.bold ]
+                        (text "jander.land")
 
-        size =
-            el [ centerX ]
-                (text <| "(" ++ width ++ ", " ++ height ++ ")")
+                Mini ->
+                    column [ Font.size <| scaled 10, Font.bold ]
+                        [ el [ centerX ] <| text "jander"
+                        , el [ centerX ] <| text ".land"
+                        ]
     in
     column [ centerX ]
-        [ title
-        , size
-        ]
+        [ title ]
 
 
 topBar : Model -> Element Msg
@@ -216,8 +242,8 @@ chapterPage model content =
                 Time.utc
 
         name =
-            el [ Font.size <| scaled 8, Font.bold ]
-                (text content.name)
+            paragraph [ Font.size <| scaled 8, Font.bold ]
+                [ text content.name ]
 
         date =
             el [ Font.size <| scaled -1 ]
