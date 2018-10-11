@@ -9,7 +9,7 @@ import Url exposing (Url)
 type alias Model =
     { key : Nav.Key
     , page : Page
-    , size : (Int, Int)
+    , size : ( Int, Int )
     }
 
 

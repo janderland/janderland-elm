@@ -1,4 +1,4 @@
-module Jander exposing (main)
+module Janderland exposing (main)
 
 import Browser
 import Browser.Navigation as Nav
@@ -10,7 +10,7 @@ import Url exposing (Url)
 import Views exposing (view)
 
 
-main : Program () Model Msg
+main : Program (Int, Int) Model Msg
 main =
     Browser.application
         { init = init
@@ -22,14 +22,12 @@ main =
         }
 
 
-init : () -> Url -> Nav.Key -> ( Model, Cmd Msg )
-init flags url key =
+init : (Int, Int) -> Url -> Nav.Key -> ( Model, Cmd Msg )
+init size url key =
     let
         page =
             urlToPage url
 
-        size =
-            (0, 0)
     in
     ( Model key page size
     , Cmd.none
@@ -56,8 +54,8 @@ update msg model =
             , Cmd.none
             )
 
-        WindowResize x y ->
-            ( { model | size = (x, y) }
+        WindowResize width height ->
+            ( { model | size = (width, height) }
             , Cmd.none
             )
 

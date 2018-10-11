@@ -83,8 +83,17 @@ homeBar model =
     let
         title =
             el [ Font.size <| scaled 10, Font.bold ] <| text "jander.land"
+
+        (width, height) =
+            model.size
+
+        size =
+            "(" ++ String.fromInt width ++ ", " ++ String.fromInt height ++ ")"
     in
-    column [ centerX ] [ title ]
+    column [ centerX ]
+    [ title
+    , el [ centerX ] <| text size
+    ]
 
 
 
