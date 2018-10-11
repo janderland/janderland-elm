@@ -17,7 +17,7 @@ import Tuple
 
 
 
--- scaling
+-- Scaling
 
 
 ratio : Float
@@ -36,7 +36,7 @@ scaled =
 
 
 
--- root view
+-- View & Root
 
 
 view : Model -> Browser.Document Msg
@@ -45,13 +45,13 @@ view model =
         ( title, children ) =
             case model.page of
                 Pages.Cover ->
-                    ( "jander.land", home model )
+                    ( "jander.land", coverPage model )
 
                 Pages.Chapter content ->
-                    ( content.name, post model content )
+                    ( content.name, chapterPage model content )
 
                 Pages.NotFound ->
-                    ( "not found", notFound model )
+                    ( "not found", notFoundPage model )
     in
     Browser.Document title
         [ root children |> layout [] ]
@@ -59,31 +59,21 @@ view model =
 
 root : List (Element Msg) -> Element Msg
 root =
-    el [ centerX ]
+    el [ centerX, explain Debug.todo ]
         << column
-            [ width <| px <| scaled 18
+            [ width (fill |> (maximum <| scaled 18))
+            , paddingXY 0 <| scaled 2
             , Font.size <| scaled 1
             , spacing <| scaled 3
-            , paddingXY 0 20
             ]
 
 
 
--- home page
+-- Top Bars
 
 
-home : Model -> List (Element Msg)
-home model =
-    [ homeBar model
-    , contents
-        |> Dict.values
-        |> List.take 5
-        |> postTable
-    ]
-
-
-homeBar : Model -> Element Msg
-homeBar model =
+coverBar : Model -> Element Msg
+coverBar model =
     let
         ( width, height ) =
             ( String.fromInt <| Tuple.first model.size
@@ -102,47 +92,6 @@ homeBar model =
         [ title
         , size
         ]
-
-
-
--- post page
-
-
-post : Model -> Content -> List (Element Msg)
-post model content =
-    let
-        formatDate =
-            DateFormat.format
-                [ DateFormat.monthNameFull
-                , DateFormat.text " "
-                , DateFormat.dayOfMonthNumber
-                , DateFormat.text ", "
-                , DateFormat.yearNumber
-                ]
-                Time.utc
-
-        name =
-            el [ Font.size <| scaled 8, Font.bold ]
-                (text content.name)
-
-        date =
-            el [ Font.size <| scaled -1 ]
-                (text <| formatDate content.date)
-    in
-    [ topBar model
-    , name
-    , date
-    , postBody content
-    ]
-
-
-postBody : Content -> Element Msg
-postBody content =
-    paragraph [] [ text content.body ]
-
-
-
--- top bar
 
 
 topBar : Model -> Element Msg
@@ -165,50 +114,38 @@ topBar model =
 
 
 
--- not found page
+-- Cover Page
 
 
-notFound : Model -> List (Element Msg)
-notFound _ =
-    let
-        coverFrag =
-            Route.Cover |> Route.toFragment
-    in
-    [ column []
-        [ el [ centerX, Font.size <| scaled 8 ]
-            (text "not found")
-        , link
-            [ Font.size <| scaled 3 ]
-            { label = text "back to cover"
-            , url = coverFrag
-            }
-        ]
+coverPage : Model -> List (Element Msg)
+coverPage model =
+    [ coverBar model
+    , contents
+        |> Dict.values
+        |> List.take 5
+        |> chapterTable
     ]
 
 
-
--- post table
-
-
-postTable : List Content -> Element Msg
-postTable contents =
+chapterTable : List Content -> Element Msg
+chapterTable contents =
     table [ spacing <| scaled 3 ]
         { data = contents
         , columns =
             [ { header = text "Date"
               , width = shrink
-              , view = postDate
+              , view = chapterDate
               }
             , { header = text "Summary"
               , width = fill
-              , view = postSummary
+              , view = chapterSummary
               }
             ]
         }
 
 
-postDate : Content -> Element Msg
-postDate content =
+chapterDate : Content -> Element Msg
+chapterDate content =
     let
         monthAndDay =
             content.date
@@ -231,8 +168,8 @@ postDate content =
         ]
 
 
-postSummary : Content -> Element Msg
-postSummary content =
+chapterSummary : Content -> Element Msg
+chapterSummary content =
     let
         postFrag =
             content.id |> Route.Chapter |> Route.toFragment
@@ -259,3 +196,62 @@ excerpt content =
         |> String.words
         |> List.take 20
         |> String.join " "
+
+
+
+-- Chapter Page
+
+
+chapterPage : Model -> Content -> List (Element Msg)
+chapterPage model content =
+    let
+        formatDate =
+            DateFormat.format
+                [ DateFormat.monthNameFull
+                , DateFormat.text " "
+                , DateFormat.dayOfMonthNumber
+                , DateFormat.text ", "
+                , DateFormat.yearNumber
+                ]
+                Time.utc
+
+        name =
+            el [ Font.size <| scaled 8, Font.bold ]
+                (text content.name)
+
+        date =
+            el [ Font.size <| scaled -1 ]
+                (text <| formatDate content.date)
+    in
+    [ topBar model
+    , name
+    , date
+    , chapterBody content
+    ]
+
+
+chapterBody : Content -> Element Msg
+chapterBody content =
+    paragraph [] [ text content.body ]
+
+
+
+-- Not Found Page
+
+
+notFoundPage : Model -> List (Element Msg)
+notFoundPage _ =
+    let
+        coverFrag =
+            Route.Cover |> Route.toFragment
+    in
+    [ column []
+        [ el [ centerX, Font.size <| scaled 8 ]
+            (text "not found")
+        , link
+            [ Font.size <| scaled 3 ]
+            { label = text "back to cover"
+            , url = coverFrag
+            }
+        ]
+    ]
