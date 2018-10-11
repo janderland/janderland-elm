@@ -85,21 +85,23 @@ home model =
 homeBar : Model -> Element Msg
 homeBar model =
     let
-        title =
-            el [ Font.size <| scaled 10, Font.bold ]
-                (text "jander.land")
-
         ( width, height ) =
             ( String.fromInt <| Tuple.first model.size
             , String.fromInt <| Tuple.second model.size
             )
+
+        title =
+            el [ Font.size <| scaled 10, Font.bold ]
+                (text "jander.land")
 
         size =
             el [ centerX ]
                 (text <| "(" ++ width ++ ", " ++ height ++ ")")
     in
     column [ centerX ]
-        [ title, size ]
+        [ title
+        , size
+        ]
 
 
 
@@ -118,10 +120,18 @@ post model content =
                 , DateFormat.yearNumber
                 ]
                 Time.utc
+
+        name =
+            el [ Font.size <| scaled 8, Font.bold ]
+                (text content.name)
+
+        date =
+            el [ Font.size <| scaled -1 ]
+                (text <| formatDate content.date)
     in
     [ topBar model
-    , el [ Font.size <| scaled 8, Font.bold ] <| text content.name
-    , el [ Font.size <| scaled -1 ] <| text <| formatDate content.date
+    , name
+    , date
     , postBody content
     ]
 
@@ -147,8 +157,8 @@ topBar model =
                 , Font.alignLeft
                 , Font.bold
                 ]
-                { url = coverFrag
-                , label = text "jander.land"
+                { label = text "jander.land"
+                , url = coverFrag
                 }
     in
     row [ width fill ] [ coverLink ]
@@ -160,9 +170,18 @@ topBar model =
 
 notFound : Model -> List (Element Msg)
 notFound _ =
-    [ row []
-        [ el [ centerX, Font.size <| scaled 10 ]
+    let
+        coverFrag =
+            Route.Cover |> Route.toFragment
+    in
+    [ column []
+        [ el [ centerX, Font.size <| scaled 8 ]
             (text "not found")
+        , link
+            [ Font.size <| scaled 3 ]
+            { label = text "back to cover"
+            , url = coverFrag
+            }
         ]
     ]
 
@@ -220,8 +239,8 @@ postSummary content =
 
         title =
             link [ Font.size <| scaled 3 ]
-                { url = postFrag
-                , label = text content.name
+                { label = text content.name
+                , url = postFrag
                 }
 
         summary =
@@ -229,7 +248,9 @@ postSummary content =
                 [ text <| excerpt content ++ "..." ]
     in
     column [ spacing <| scaled -1 ]
-        [ title, summary ]
+        [ title
+        , summary
+        ]
 
 
 excerpt : Content -> String
