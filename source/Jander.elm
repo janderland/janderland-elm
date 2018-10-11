@@ -2,6 +2,7 @@ module Jander exposing (main)
 
 import Browser
 import Browser.Navigation as Nav
+import Browser.Events as Events
 import Pages exposing (Page)
 import Route exposing (Route)
 import State exposing (Model, Msg(..))
@@ -26,8 +27,11 @@ init flags url key =
     let
         page =
             urlToPage url
+
+        size =
+            (0, 0)
     in
-    ( Model key page
+    ( Model key page size
     , Cmd.none
     )
 
@@ -52,10 +56,15 @@ update msg model =
             , Cmd.none
             )
 
+        WindowResize x y ->
+            ( { model | size = (x, y) }
+            , Cmd.none
+            )
+
 
 subs : Model -> Sub Msg
-subs model =
-    Sub.none
+subs _ =
+    Events.onResize WindowResize
 
 
 urlToPage : Url -> Page
