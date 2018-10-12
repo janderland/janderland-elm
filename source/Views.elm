@@ -47,12 +47,12 @@ scaled x =
 
 maxWidth : Int
 maxWidth =
-    scaled 18
+    scaled 17
 
 
 miniWidth : Int
 miniWidth =
-    scaled 17
+    scaled 18
 
 
 
