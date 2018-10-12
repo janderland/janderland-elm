@@ -15,6 +15,7 @@ let {
     isEmpty,
     reduce,
     update,
+    sortBy,
     every,
     range,
     tail,
@@ -221,7 +222,6 @@ let captures = (string, regex) =>
     tail(string.match(regex))
 
 
-
 /*
  * Generate Elm
  */
@@ -232,7 +232,7 @@ let captures = (string, regex) =>
 // Posts.elm file.
 
 const template = `
-module Contents exposing (Content, contents)
+module Contents exposing (Content, contentList, contentDict)
 
 import Time
 import Dict exposing (Dict)
@@ -245,11 +245,10 @@ type alias Content =
     , body : String
     }
 
-contents : Dict String Content
-contents =
+contentList : List Content
+contentList =
     [ {{#each posts}}
-        ( "{{this.meta.id}}"
-        , Content
+        Content
             "{{this.meta.id}}"
             "{{this.meta.title}}"
             (Time.millisToPosix {{this.meta.date}})
@@ -257,9 +256,14 @@ contents =
                 "{{this}}"{{#unless @last}},{{/unless}}
             {{/each}} ]
             "{{this.body}}"
-        ){{#unless @last}},{{/unless}}
+        {{#unless @last}},{{/unless}}
     {{/each}} ]
-    |> Dict.fromList
+
+contentDict : Dict String Content
+contentDict =
+    contentList
+        |> List.map (\\c -> (c.id, c))
+        |> Dict.fromList
 `
 
 
@@ -361,6 +365,12 @@ readFilesFromDir(env.JANDER_CONTENT)
 
     .then(log('Parsing content'))
     .map(parseFile)
+
+    .then((content) =>
+        sortBy(
+          content,
+          (c) => -c.meta.date
+        ))
 
     .then(log('Generating elm'))
     .then(generateElm)

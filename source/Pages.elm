@@ -1,6 +1,6 @@
 module Pages exposing (Page(..), fromRoute)
 
-import Contents exposing (Content, contents)
+import Contents exposing (Content, contentDict)
 import Dict
 import Maybe exposing (withDefault)
 import Route exposing (Route)
@@ -28,4 +28,4 @@ fromRoute =
 
 chapter : String -> Maybe Page
 chapter id =
-    contents |> Dict.get id |> Maybe.map Chapter
+    contentDict |> Dict.get id |> Maybe.map Chapter

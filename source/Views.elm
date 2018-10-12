@@ -1,7 +1,7 @@
 module Views exposing (clampWidth, layoutFromWidth, view)
 
 import Browser
-import Contents exposing (Content, contents)
+import Contents exposing (Content, contentDict, contentList)
 import DateFormat
 import Dict
 import Element exposing (..)
@@ -157,8 +157,7 @@ coverPage : Model -> List (Element Msg)
 coverPage model =
     let
         chapters =
-            contents
-                |> Dict.values
+            contentList
                 |> List.take 5
                 |> chapterList model
     in
