@@ -161,11 +161,12 @@ coverPage model =
                 |> List.take 5
                 |> chapterList model
     in
-    [ coverBar model ]
-        ++ chapters
+    [ coverBar model
+    , chapters
+    ]
 
 
-chapterList : Model -> List Content -> List (Element Msg)
+chapterList : Model -> List Content -> Element Msg
 chapterList model contents =
     let
         dates =
@@ -188,7 +189,8 @@ chapterList model contents =
                 , el [ width <| fill ] <| summary
                 ]
     in
-    List.map2 chapter dates summaries
+    column [ spacing <| scaled 5 ] <|
+        List.map2 chapter dates summaries
 
 
 chapterDate : Content -> Element Msg
