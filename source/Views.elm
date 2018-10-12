@@ -118,8 +118,6 @@ coverBar model =
             , el [ centerX, Font.size <| scaled 9 ] <| text ".land"
             ]
 
-        -- This case here could be done with a paragraph if
-        -- there was some way to allow linebreaking mid-word
         title =
             case model.layout of
                 Full ->
