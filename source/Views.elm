@@ -125,12 +125,12 @@ topBar model =
             Route.Cover |> Route.toFragment
 
         coverLink =
-            link
-                [ Font.size <| scaled 3
-                , Font.alignLeft
-                , Font.bold
-                ]
-                { label = text "jander.land"
+            link [ Font.bold ]
+                { label =
+                    paragraph []
+                        [ el [ Font.size <| scaled 3 ] <| text "jander"
+                        , el [ Font.size <| scaled 2 ] <| text ".land"
+                        ]
                 , url = coverFrag
                 }
     in
