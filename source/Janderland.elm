@@ -7,7 +7,7 @@ import Pages exposing (Page)
 import Route exposing (Route)
 import State exposing (Model, Msg(..))
 import Url exposing (Url)
-import Views exposing (capWidth, layoutFromWidth, view)
+import Views exposing (clampWidth, layoutFromWidth, view)
 
 
 type alias Flags =
@@ -34,7 +34,7 @@ init flags url key =
             urlToPage url
 
         width =
-            capWidth flags.width
+            clampWidth flags.width
 
         layout =
             layoutFromWidth flags.width
@@ -66,7 +66,7 @@ update msg model =
 
         WindowResize viewportWidth _ ->
             ( { model
-                | width = capWidth viewportWidth
+                | width = clampWidth viewportWidth
                 , layout = layoutFromWidth viewportWidth
               }
             , Cmd.none

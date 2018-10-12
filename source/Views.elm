@@ -1,4 +1,4 @@
-module Views exposing (capWidth, layoutFromWidth, view)
+module Views exposing (clampWidth, layoutFromWidth, view)
 
 import Browser
 import Contents exposing (Content, contents)
@@ -40,14 +40,14 @@ maxWidth =
     scaled 18
 
 
-capWidth : Int -> Int
-capWidth width =
-    min maxWidth width
-
-
 miniWidth : Int
 miniWidth =
-    toFloat maxWidth * (4 / 5) |> round
+    scaled 17
+
+
+clampWidth : Int -> Int
+clampWidth width =
+    min maxWidth width
 
 
 layoutFromWidth : Int -> Layout
@@ -99,22 +99,20 @@ root model =
 coverBar : Model -> Element Msg
 coverBar model =
     let
-        width =
-            String.fromInt <| model.width
+        janderland =
+            [ el [ centerX, Font.size <| scaled 10 ] <| text "jander"
+            , el [ centerX, Font.size <| scaled 9 ] <| text ".land"
+            ]
 
         -- This case here could be done with a paragraph if
         -- there was some way to allow linebreaking mid-word
         title =
             case model.layout of
                 Full ->
-                    el [ Font.size <| scaled 10, Font.bold ]
-                        (text "jander.land")
+                    paragraph [ Font.bold ] janderland
 
                 Mini ->
-                    column [ Font.size <| scaled 10, Font.bold ]
-                        [ el [ centerX ] <| text "jander"
-                        , el [ centerX ] <| text ".land"
-                        ]
+                    column [ Font.bold ] janderland
     in
     column [ centerX ]
         [ title ]
