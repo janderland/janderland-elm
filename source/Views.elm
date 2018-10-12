@@ -20,19 +20,29 @@ import Tuple
 -- Scaling
 
 
-ratio : Float
-ratio =
+base : Float
+base =
     5 / 4
 
 
-base : Float
-base =
+coefficient : Float
+coefficient =
     16
 
 
 scaled : Int -> Int
-scaled =
-    round << modular base ratio
+scaled x =
+    let
+        scale =
+            toFloat x
+    in
+    coefficient
+        * (base ^ (scale - 1))
+        |> round
+
+
+
+-- Global Constants
 
 
 maxWidth : Int
@@ -43,6 +53,10 @@ maxWidth =
 miniWidth : Int
 miniWidth =
     scaled 17
+
+
+
+-- Viewport Width Processing
 
 
 clampWidth : Int -> Int
@@ -186,7 +200,7 @@ chapterDate content =
                     [ DateFormat.yearNumber ]
                     Time.utc
     in
-    column [ centerY ]
+    column [ centerY, Font.size <| scaled -1 ]
         [ el [ centerX ] <| text monthAndDay
         , el [ centerX ] <| text year
         ]
