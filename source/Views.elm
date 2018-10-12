@@ -157,29 +157,41 @@ topBar model =
 
 coverPage : Model -> List (Element Msg)
 coverPage model =
-    [ coverBar model
-    , contents
-        |> Dict.values
-        |> List.take 5
-        |> chapterTable
-    ]
+    let
+        chapters =
+            contents
+                |> Dict.values
+                |> List.take 5
+                |> chapterList model
+    in
+    [ coverBar model ]
+        ++ chapters
 
 
-chapterTable : List Content -> Element Msg
-chapterTable contents =
-    table [ spacing <| scaled 3 ]
-        { data = contents
-        , columns =
-            [ { header = text "Date"
-              , width = shrink
-              , view = chapterDate
-              }
-            , { header = text "Summary"
-              , width = fill
-              , view = chapterSummary
-              }
-            ]
-        }
+chapterList : Model -> List Content -> List (Element Msg)
+chapterList model contents =
+    let
+        dates =
+            List.map chapterDate contents
+
+        summaries =
+            List.map chapterSummary contents
+
+        space =
+            case model.layout of
+                Mini ->
+                    scaled 2
+
+                Full ->
+                    scaled 5
+
+        chapter date summary =
+            row [ width <| fill, spacing space ]
+                [ el [ width <| shrink ] <| date
+                , el [ width <| fill ] <| summary
+                ]
+    in
+    List.map2 chapter dates summaries
 
 
 chapterDate : Content -> Element Msg
