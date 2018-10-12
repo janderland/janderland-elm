@@ -121,14 +121,14 @@ let parseFile = (file) => {
 // Parses a content's meta section.
 
 let parseMeta = (meta) => {
-      let parsed = fromCaptures(
-          meta, ['title', 'date', 'tags'],
-          /^# ([^\n]+)\n\s*([^\n]+)\n\s*(-.+)$/s
-      )
-      parsed.date = parseDate(parsed.date)
-      parsed.tags = parseTags(parsed.tags)
-      parsed.id = parseId(parsed)
-      return parsed
+    let parsed = fromCaptures(
+        meta, ['title', 'date', 'tags'],
+        /^# ([^\n]+)\n\s*([^\n]+)\n\s*(-.+)$/s
+    )
+    parsed.date = parseDate(parsed.date)
+    parsed.tags = parseTags(parsed.tags)
+    parsed.id = parseId(parsed)
+    return parsed
 }
 
 
@@ -222,6 +222,7 @@ let captures = (string, regex) =>
     tail(string.match(regex))
 
 
+
 /*
  * Generate Elm
  */
@@ -229,13 +230,13 @@ let captures = (string, regex) =>
 
 
 // The template used to generate the
-// Posts.elm file.
+// Content.elm file.
 
 const template = `
 module Contents exposing (Content, contentList, contentDict)
 
-import Time
 import Dict exposing (Dict)
+import Time
 
 type alias Content =
     { id : String
@@ -247,7 +248,7 @@ type alias Content =
 
 contentList : List Content
 contentList =
-    [ {{#each posts}}
+    [ {{#each contents}}
         Content
             "{{this.meta.id}}"
             "{{this.meta.title}}"
@@ -269,7 +270,7 @@ contentDict =
 
 
 let generateElm = (parsedFiles) =>
-    handlebars.compile(template)({ posts: parsedFiles })
+    handlebars.compile(template)({ contents: parsedFiles })
 
 
 
