@@ -5,6 +5,7 @@ import Contents exposing (Content, contentDict, contentList)
 import DateFormat
 import Dict
 import Element exposing (..)
+import Element.Background as Background
 import Element.Border as Border
 import Element.Font as Font
 import Element.Input as Input
@@ -56,6 +57,90 @@ miniWidth =
 
 
 
+-- Base16 Colors
+
+
+base00 : Color
+base00 =
+    rgb255 45 45 45
+
+
+base01 : Color
+base01 =
+    rgb255 57 57 57
+
+
+base02 : Color
+base02 =
+    rgb255 81 81 81
+
+
+base03 : Color
+base03 =
+    rgb255 116 115 105
+
+
+base04 : Color
+base04 =
+    rgb255 160 159 147
+
+
+base05 : Color
+base05 =
+    rgb255 211 208 200
+
+
+base06 : Color
+base06 =
+    rgb255 232 230 223
+
+
+base07 : Color
+base07 =
+    rgb255 242 240 236
+
+
+base08 : Color
+base08 =
+    rgb255 242 119 122
+
+
+base09 : Color
+base09 =
+    rgb255 249 145 87
+
+
+base0A : Color
+base0A =
+    rgb255 255 204 102
+
+
+base0B : Color
+base0B =
+    rgb255 153 204 153
+
+
+base0C : Color
+base0C =
+    rgb255 102 204 204
+
+
+base0D : Color
+base0D =
+    rgb255 102 153 204
+
+
+base0E : Color
+base0E =
+    rgb255 204 153 204
+
+
+base0F : Color
+base0F =
+    rgb255 210 123 83
+
+
+
 -- Viewport Width Processing
 
 
@@ -92,7 +177,13 @@ view model =
                     ( "not found", notFoundPage model )
     in
     Browser.Document title
-        [ root model children |> layout [] ]
+        [ root model children
+            |> layout
+                [ Background.color base00
+                , Font.size <| scaled 1
+                , Font.color base05
+                ]
+        ]
 
 
 root : Model -> List (Element Msg) -> Element Msg
@@ -101,7 +192,6 @@ root model =
         << column
             [ width <| px model.width
             , paddingXY (scaled -1) (scaled 2)
-            , Font.size <| scaled 1
             , spacing <| scaled 3
             ]
 
