@@ -157,9 +157,7 @@ coverPage : Model -> List (Element Msg)
 coverPage model =
     let
         chapters =
-            contentList
-                |> List.take 5
-                |> chapterList model
+            contentList |> chapterList model
     in
     [ coverBar model
     , chapters
