@@ -57,7 +57,7 @@ miniWidth =
 
 
 
--- Base16 Colors
+-- base16 Eighties
 
 
 base00 : Color
@@ -141,6 +141,34 @@ base0F =
 
 
 
+-- Color Bindings
+
+
+backColor =
+    base00
+
+
+foreColor =
+    base05
+
+
+janderColor =
+    base0E
+
+
+landColor =
+    base0D
+
+
+dateColor =
+    base08
+
+
+titleColor =
+    base0A
+
+
+
 -- Viewport Width Processing
 
 
@@ -179,9 +207,9 @@ view model =
     Browser.Document title
         [ root model children
             |> layout
-                [ Background.color base00
+                [ Background.color backColor
                 , Font.size <| scaled 1
-                , Font.color base05
+                , Font.color foreColor
                 ]
         ]
 
@@ -204,8 +232,18 @@ coverBar : Model -> Element Msg
 coverBar model =
     let
         janderland =
-            [ el [ centerX, Font.size <| scaled 10 ] <| text "jander"
-            , el [ centerX, Font.size <| scaled 9 ] <| text ".land"
+            [ el
+                [ centerX
+                , Font.size <| scaled 10
+                , Font.color janderColor
+                ]
+                (text "jander")
+            , el
+                [ centerX
+                , Font.size <| scaled 9
+                , Font.color landColor
+                ]
+                (text ".land")
             ]
 
         title =
@@ -230,8 +268,16 @@ topBar model =
             link [ Font.bold ]
                 { label =
                     paragraph []
-                        [ el [ Font.size <| scaled 3 ] <| text "jander"
-                        , el [ Font.size <| scaled 2 ] <| text ".land"
+                        [ el
+                            [ Font.size <| scaled 3
+                            , Font.color janderColor
+                            ]
+                            (text "jander")
+                        , el
+                            [ Font.size <| scaled 2
+                            , Font.color landColor
+                            ]
+                            (text ".land")
                         ]
                 , url = coverFrag
                 }
@@ -299,7 +345,11 @@ chapterDate content =
                     [ DateFormat.yearNumber ]
                     Time.utc
     in
-    column [ centerY, Font.size <| scaled -1 ]
+    column
+        [ centerY
+        , Font.color dateColor
+        , Font.size <| scaled -1
+        ]
         [ el [ centerX ] <| text monthAndDay
         , el [ centerX ] <| text year
         ]
@@ -312,7 +362,10 @@ chapterSummary content =
             content.id |> Route.Chapter |> Route.toFragment
 
         title =
-            link [ Font.size <| scaled 3 ]
+            link
+                [ Font.size <| scaled 3
+                , Font.color titleColor
+                ]
                 { label = text content.name
                 , url = postFrag
                 }
@@ -353,11 +406,15 @@ chapterPage model content =
                 Time.utc
 
         name =
-            paragraph [ Font.size <| scaled 8, Font.bold ]
+            paragraph
+                [ Font.size <| scaled 8
+                , Font.color titleColor
+                , Font.bold
+                ]
                 [ text content.name ]
 
         date =
-            el [ Font.size <| scaled -1 ]
+            el [ Font.size <| scaled -1, Font.color dateColor ]
                 (text <| formatDate content.date)
     in
     [ topBar model
@@ -383,7 +440,11 @@ notFoundPage _ =
             Route.Cover |> Route.toFragment
     in
     [ column []
-        [ el [ centerX, Font.size <| scaled 8 ]
+        [ el
+            [ centerX
+            , Font.color titleColor
+            , Font.size <| scaled 8
+            ]
             (text "not found")
         , link
             [ Font.size <| scaled 3 ]
