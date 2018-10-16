@@ -18,7 +18,20 @@ import Tuple
 
 
 
--- Scaling
+{- Scaling
+
+   All pixel ammounts are assigned via an exponential
+   scale using the `scaled` function below. There are
+   three reasons I'm doing this:
+   1. It limits the number of options I have, which
+      helps make decisions faster.
+   2. The larger an object is, the less percievable
+      smaller changes become. The exponential scale
+      Forces me to only make changes that make a
+      significant difference.
+   3. It provides a centralized place where I can
+      resize every UI element.
+-}
 
 
 base : Float
@@ -43,21 +56,53 @@ scaled x =
 
 
 
--- Global Constants
+{- Responsiveness
+
+   Janderland handles responsiveness using
+   the following principles:
+   - Normal text flow should be the default
+     responsiveness tool. No need to do
+     anything fancy here, just setup text to
+     flow around embedded content.
+   - If specialized logic is needed, there
+     are two layout states to specialize for:
+     `Full` & `Mini`. The current layout state
+     is determined by the
+     `layoutBoundary` value.
+   - No matter what is being displayed, the
+     content's width shall not exceed the
+     `maxContentWidth` value.
+-}
 
 
-maxWidth : Int
-maxWidth =
+maxContentWidth : Int
+maxContentWidth =
     scaled 17
 
 
-miniWidth : Int
-miniWidth =
+layoutBoundary : Int
+layoutBoundary =
     scaled 18
 
 
+clampWidth : Int -> Int
+clampWidth width =
+    min maxContentWidth width
 
--- base16 Eighties
+
+layoutFromWidth : Int -> Layout
+layoutFromWidth width =
+    if width > layoutBoundary then
+        Full
+
+    else
+        Mini
+
+
+
+{- The "eighties" color-scheme from base16.
+   http://chriskempson.com/projects/base16/
+-}
 
 
 base00 : Color
@@ -161,29 +206,11 @@ landColor =
 
 
 dateColor =
-    base08
+    base04
 
 
 titleColor =
     base0A
-
-
-
--- Viewport Width Processing
-
-
-clampWidth : Int -> Int
-clampWidth width =
-    min maxWidth width
-
-
-layoutFromWidth : Int -> Layout
-layoutFromWidth width =
-    if width <= miniWidth then
-        Mini
-
-    else
-        Full
 
 
 
@@ -318,13 +345,16 @@ chapterList model contents =
                     scaled 5
 
         chapter date summary =
-            row [ width <| fill, spacing space ]
+            row
+                [ width <| fill
+                , spacing space
+                , paddingXY 0 (scaled 5)
+                ]
                 [ el [ width <| shrink ] <| date
                 , el [ width <| fill ] <| summary
                 ]
     in
-    column [ spacing <| scaled 5 ] <|
-        List.map2 chapter dates summaries
+    column [] <| List.map2 chapter dates summaries
 
 
 chapterDate : Content -> Element Msg
