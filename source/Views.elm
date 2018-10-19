@@ -1,7 +1,7 @@
 module Views exposing (clampWidth, layoutFromWidth, view)
 
 import Browser
-import Contents exposing (Content, contentDict, contentList)
+import Content exposing (Content, contentDict, contentList)
 import DateFormat
 import Dict
 import Element exposing (..)
@@ -10,6 +10,7 @@ import Element.Border as Border
 import Element.Font as Font
 import Element.Input as Input
 import Html exposing (Html)
+import Markdown
 import Pages exposing (Page)
 import Route
 import State exposing (Layout(..), Model, Msg(..))
@@ -456,54 +457,9 @@ chapterPage model content =
 
 chapterBody : Content -> Element Msg
 chapterBody content =
-    if content.id == "8643d6eb" then
-        janderBody
-
-    else
-        paragraph [] [ text content.body ]
-
-
-type HeaderType
-    = H1
-    | H2
-    | H3
-
-
-header : HeaderType -> String -> Element Msg
-header kind string =
-    let
-        size =
-            case kind of
-                H1 ->
-                    scaled 5
-
-                H2 ->
-                    scaled 4
-
-                H3 ->
-                    scaled 3
-    in
-    el
-        [ Font.size size
-        , Font.color titleColor
-        , paddingXY 0 <| scaled 3
-        ]
-        (text string)
-
-
-janderBody : Element Msg
-janderBody =
-    textColumn []
-        [ paragraph []
-            [ text """
-              I've been building this form of expression for a
-              couple years now. And what better form but self
-              expression, so it's first words will be about
-              itself.
-              """
-            ]
-        , header H1 "Section 1"
-        ]
+    Markdown.toHtml Nothing content.body
+        |> Html.div []
+        |> Element.html
 
 
 

@@ -1,6 +1,6 @@
 module Pages exposing (Page(..), fromRoute)
 
-import Contents exposing (Content, contentDict)
+import Content exposing (Content, contentDict)
 import Dict
 import Maybe exposing (withDefault)
 import Route exposing (Route)

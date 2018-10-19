@@ -2,7 +2,7 @@
   "name": "janderland",
   "version": "1.0.0",
   "scripts": {
-    "jander": "scripts/jander.sh"
+    "jander": "scripts/compile.sh"
   },
   "repository": {
     "type": "git",
