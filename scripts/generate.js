@@ -14,13 +14,9 @@ let {
     zipObject,
     isEmpty,
     reduce,
-    update,
     sortBy,
-    every,
     range,
-    tail,
-    set,
-    has
+    tail
 } = require('lodash')
 
 let writeFile = promise.promisify(fs.writeFile)
@@ -349,16 +345,13 @@ let env = reduce([
         'JANDER_BUILD',
         'JANDER_CONTENT',
         'JANDER_GENERATED'
-    ], (env, name) =>
-        set(
-            env,
-            name,
-            process.env[name] || throwErr(
+    ], (env, name) => {
+          env[name] = process.env[name]
+              || throwErr(
                 'Missing environment ' +
-                'variable "' + name + '"'
-            )
-        ),
-    {})
+                'variable "' + name + '"')
+          return env
+    }, {})
 
 
 
