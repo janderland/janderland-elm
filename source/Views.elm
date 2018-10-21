@@ -10,6 +10,7 @@ import Element.Border as Border
 import Element.Font as Font
 import Element.Input as Input
 import Html exposing (Html)
+import Markdown
 import Pages exposing (Page)
 import Route
 import State exposing (Layout(..), Model, Msg(..))
@@ -400,22 +401,20 @@ chapterSummary content =
                 , url = postFrag
                 }
 
+        excerpt =
+            content.body
+                |> String.words
+                |> List.take 20
+                |> String.join " "
+
         summary =
             paragraph []
-                [ text <| excerpt content ++ "..." ]
+                [ text <| excerpt ++ "..." ]
     in
     column [ spacing <| scaled -1 ]
         [ title
         , summary
         ]
-
-
-excerpt : Content -> String
-excerpt content =
-    content.body
-        |> String.words
-        |> List.take 20
-        |> String.join " "
 
 
 
@@ -446,64 +445,17 @@ chapterPage model content =
         date =
             el [ Font.size <| scaled -1, Font.color dateColor ]
                 (text <| formatDate content.date)
+
+        body =
+            Markdown.toHtml Nothing content.body
+                |> Html.div []
+                |> Element.html
     in
     [ topBar model
     , name
     , date
-    , chapterBody content
+    , body
     ]
-
-
-chapterBody : Content -> Element Msg
-chapterBody content =
-    if content.id == "8643d6eb" then
-        janderBody
-
-    else
-        paragraph [] [ text content.body ]
-
-
-type HeaderType
-    = H1
-    | H2
-    | H3
-
-
-header : HeaderType -> String -> Element Msg
-header kind string =
-    let
-        size =
-            case kind of
-                H1 ->
-                    scaled 5
-
-                H2 ->
-                    scaled 4
-
-                H3 ->
-                    scaled 3
-    in
-    el
-        [ Font.size size
-        , Font.color titleColor
-        , paddingXY 0 <| scaled 3
-        ]
-        (text string)
-
-
-janderBody : Element Msg
-janderBody =
-    textColumn []
-        [ paragraph []
-            [ text """
-              I've been building this form of expression for a
-              couple years now. And what better form but self
-              expression, so it's first words will be about
-              itself.
-              """
-            ]
-        , header H1 "Section 1"
-        ]
 
 
 
