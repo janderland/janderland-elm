@@ -1,4 +1,4 @@
-module Ogham exposing (fromString)
+module Ogham exposing (Mapper, OghamChar(..), fromString, withMapper)
 
 
 type OghamChar
@@ -31,20 +31,40 @@ type OghamChar
     | Z
 
 
+type alias Mapper =
+    Char -> OghamChar
+
+
 fromString : String -> String
 fromString =
     String.toLower
         >> String.toList
-        >> parseChars
+        >> parseChars default
         >> List.map toChar
         >> String.fromList
 
 
-parseChars : List Char -> List OghamChar
-parseChars list =
+withMapper : Mapper -> String -> String
+withMapper mapper string =
+    string
+        |> String.toLower
+        |> String.toList
+        |> parseChars mapper
+        |> List.map toChar
+        |> String.fromList
+
+
+parseChars : Mapper -> List Char -> List OghamChar
+parseChars mapper list =
     let
         pop l =
             ( List.head l, List.drop 1 l )
+
+        recurse =
+            parseChars mapper
+
+        sParse =
+            singleParse mapper
     in
     case pop list of
         ( Nothing, _ ) ->
@@ -53,34 +73,34 @@ parseChars list =
         ( Just head1, dropped1 ) ->
             case pop dropped1 of
                 ( Nothing, _ ) ->
-                    [ singleParse head1 ]
+                    [ sParse head1 ]
 
                 ( Just head2, dropped2 ) ->
                     case ( head1, head2 ) of
                         ( 'a', 'e' ) ->
-                            AE :: parseChars dropped2
+                            AE :: recurse dropped2
 
                         ( 'e', 'a' ) ->
-                            EA :: parseChars dropped2
+                            EA :: recurse dropped2
 
                         ( 'i', 'a' ) ->
-                            IA :: parseChars dropped2
+                            IA :: recurse dropped2
 
                         ( 'n', 'g' ) ->
-                            NG :: parseChars dropped2
+                            NG :: recurse dropped2
 
                         ( 'o', 'i' ) ->
-                            OI :: parseChars dropped2
+                            OI :: recurse dropped2
 
                         ( 'u', 'i' ) ->
-                            UI :: parseChars dropped2
+                            UI :: recurse dropped2
 
                         _ ->
-                            singleParse head1 :: parseChars dropped1
+                            sParse head1 :: recurse dropped1
 
 
-singleParse : Char -> OghamChar
-singleParse char =
+singleParse : Mapper -> Char -> OghamChar
+singleParse mapper char =
     case char of
         'a' ->
             A
@@ -141,6 +161,64 @@ singleParse char =
 
         'z' ->
             Z
+
+        _ ->
+            mapper char
+
+
+default : Mapper
+default char =
+    case char of
+        'j' ->
+            G
+
+        'k' ->
+            T
+
+        'v' ->
+            Z
+
+        'w' ->
+            U
+
+        'x' ->
+            S
+
+        'y' ->
+            UI
+
+        '0' ->
+            H
+
+        '1' ->
+            B
+
+        '2' ->
+            D
+
+        '3' ->
+            L
+
+        '4' ->
+            T
+
+        '5' ->
+            F
+
+        '6' ->
+            C
+
+        '7' ->
+            S
+
+        '8' ->
+            Q
+
+        '9' ->
+            N
+
+        '/' ->
+            M
 
         _ ->
             Space
