@@ -1,7 +1,7 @@
-module Ogham exposing (toChar)
+module Ogham exposing (fromString)
 
 
-type TransChar
+type OghamChar
     = Space
     | A
     | AE
@@ -40,50 +40,46 @@ fromString =
         >> String.fromList
 
 
-parseChars : List Char -> List TransChar
+parseChars : List Char -> List OghamChar
 parseChars list =
-    case List.head list of
-        Nothing ->
+    let
+        pop l =
+            ( List.head l, List.drop 1 l )
+    in
+    case pop list of
+        ( Nothing, _ ) ->
             []
 
-        Just head1 ->
-            let
-                droppedOne =
-                    List.drop 1 list
-            in
-            case List.head droppedOne of
-                Nothing ->
+        ( Just head1, dropped1 ) ->
+            case pop dropped1 of
+                ( Nothing, _ ) ->
                     [ singleParse head1 ]
 
-                Just head2 ->
-                    let
-                        droppedTwo =
-                            List.drop 2 list
-                    in
+                ( Just head2, dropped2 ) ->
                     case ( head1, head2 ) of
                         ( 'a', 'e' ) ->
-                            AE :: parseChars droppedTwo
+                            AE :: parseChars dropped2
 
                         ( 'e', 'a' ) ->
-                            EA :: parseChars droppedTwo
+                            EA :: parseChars dropped2
 
                         ( 'i', 'a' ) ->
-                            IA :: parseChars droppedTwo
+                            IA :: parseChars dropped2
 
                         ( 'n', 'g' ) ->
-                            NG :: parseChars droppedTwo
+                            NG :: parseChars dropped2
 
                         ( 'o', 'i' ) ->
-                            OI :: parseChars droppedTwo
+                            OI :: parseChars dropped2
 
                         ( 'u', 'i' ) ->
-                            UI :: parseChars droppedTwo
+                            UI :: parseChars dropped2
 
                         _ ->
-                            singleParse head1 :: parseChars droppedOne
+                            singleParse head1 :: parseChars dropped1
 
 
-singleParse : Char -> TransChar
+singleParse : Char -> OghamChar
 singleParse char =
     case char of
         'a' ->
@@ -150,9 +146,9 @@ singleParse char =
             Space
 
 
-toChar : TransChar -> Char
-toChar ogham =
-    case ogham of
+toChar : OghamChar -> Char
+toChar oghamChar =
+    case oghamChar of
         Space ->
             '\u{1680}'
 
