@@ -11,6 +11,7 @@ import Element.Font as Font
 import Element.Input as Input
 import Html exposing (Html)
 import Markdown
+import Ogham
 import Pages exposing (Page)
 import Route
 import State exposing (Layout(..), Model, Msg(..))
@@ -207,11 +208,15 @@ landColor =
 
 
 dateColor =
-    base04
+    base03
 
 
 titleColor =
     base0A
+
+
+oghamColor =
+    base03
 
 
 
@@ -281,9 +286,13 @@ coverBar model =
 
                 Mini ->
                     column [ Font.bold ] janderland
+
+        ogham =
+            el [ centerX, Font.color <| oghamColor ]
+                (text <| Ogham.fromString "little known lots to learn")
     in
     column [ centerX ]
-        [ title ]
+        [ title, ogham ]
 
 
 topBar : Model -> Element Msg
@@ -446,14 +455,24 @@ chapterPage model content =
             el [ Font.size <| scaled -1, Font.color dateColor ]
                 (text <| formatDate content.date)
 
+        ogham =
+            el
+                [ Font.size <| scaled 2
+                , Font.color <| oghamColor
+                ]
+                (text <| Ogham.fromString content.name)
+
+        header =
+            column [ spacing <| scaled 1 ]
+                [ name, date ]
+
         body =
             Markdown.toHtml Nothing content.body
                 |> Html.div []
                 |> Element.html
     in
     [ topBar model
-    , name
-    , date
+    , header
     , body
     ]
 
