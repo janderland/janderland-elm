@@ -19,6 +19,8 @@ JANDER.LAND is my first Elm application, my second
 code-generation pipeline, and a welcome return to UI design.
 It's also burned up quite a bit of time.
 
+![Old Site](/oldsite.jpg)
+
 The site's birth was during March of 2016. Originally, it
 was built on the Hexo Blog Framework, with a SMACSS Sass
 stylesheet and a small bit of custom JavaScript. This custom
@@ -37,17 +39,15 @@ factory default, I wanted something unique from the ground
 up, and yet something actual instead of a longer bucket
 list.
 
-> "I'm in love with functional programming. I want
-> a honeymoon."
+> I'm in love with functional programming. I want a honeymoon.
 
 Well, I guess I'll go with Elm.
 
-> "I want the content to be sharable in a compact format."
+> I want the content to be sharable in a compact format.
 
 Ok, we can write it in markdown.
 
-> "I also don't want any runtime errors. I'm using Elm
-> after all."
+> I also don't want any runtime errors. I'm using Elm after all.
 
 Fine, using Node.js, we'll transpile the markdown into Elm
 with the Elm compiler double checking our work.

@@ -11,6 +11,9 @@ import Element.Font as Font
 import Element.Input as Input
 import Html exposing (Html)
 import Markdown
+import Markdown.Block as Block exposing (Block(..))
+import Markdown.Config as MdConfig
+import Markdown.Inline as Inline exposing (Inline(..))
 import Ogham
 import Pages exposing (Page)
 import Route
@@ -193,6 +196,10 @@ base0F =
 
 backColor =
     base00
+
+
+quoteColor =
+    base01
 
 
 foreColor =
@@ -465,15 +472,10 @@ chapterPage model content =
         header =
             column [ spacing <| scaled 1 ]
                 [ name, date ]
-
-        body =
-            Markdown.toHtml Nothing content.body
-                |> Html.div []
-                |> Element.html
     in
     [ topBar model
     , header
-    , body
+    , parseMd content.body
     ]
 
 
@@ -501,3 +503,176 @@ notFoundPage _ =
             }
         ]
     ]
+
+
+
+-- Markdown Bindings
+
+
+parseMd : String -> Element Msg
+parseMd markdown =
+    let
+        config =
+            Just
+                { softAsHardLineBreak = False
+                , rawHtml = MdConfig.DontParse
+                }
+    in
+    Block.parse config markdown
+        |> Debug.log "Parsed MD"
+        |> flatMap parseBlock
+        |> textColumn [ spacing <| scaled 2 ]
+
+
+
+{- Nullability via Lists
+
+   This flatMap function fits together an intersting
+   abstraction I found while writing these markdown
+   bindings.
+
+   I wanted a way of mapping a tree of markdown blocks
+   to a tree of UI elements, but with the flexibility
+   of mapping a particular block to nothing i.e. not
+   having it represented in the final UI tree. Well,
+   the semantic choice would be to use a Maybe. The
+   diffulty with this is that eventually I'll need to
+   clear out the Nothings from my tree. Well, I had a
+   tough time finding a clean way to do this.
+
+   Instead, I realized if you have your mapping
+   function return a list of UI elements per block,
+   you now have the flexibility of returning a UI
+   element or nothing at all via the empty list. It's
+   also very easy to flatten the resulting list of
+   lists as shown below.
+-}
+
+
+flatMap : (a -> List b) -> List a -> List b
+flatMap func =
+    List.map func >> List.foldr (++) []
+
+
+parseBlock : Block b i -> List (Element Msg)
+parseBlock block =
+    let
+        parseInlines =
+            flatMap parseInline
+
+        recurseOver =
+            flatMap parseBlock
+    in
+    case block of
+        BlankLine _ ->
+            []
+
+        ThematicBreak ->
+            [ text "---" ]
+
+        Heading _ level inlines ->
+            let
+                size =
+                    if level >= 3 then
+                        scaled 2
+
+                    else if level == 2 then
+                        scaled 3
+
+                    else
+                        scaled 4
+            in
+            [ paragraph [ Font.size size ]
+                (parseInlines inlines)
+            ]
+
+        CodeBlock kind code ->
+            [ paragraph
+                [ Font.family [ Font.monospace ]
+                , paddingXY
+                    (scaled 2)
+                    (scaled -1)
+                , Border.width <| scaled -10
+                ]
+                [ text code ]
+            ]
+
+        Paragraph _ inlines ->
+            [ paragraph [] <| parseInlines inlines ]
+
+        BlockQuote blocks ->
+            [ paragraph
+                [ paddingXY
+                    (scaled 0)
+                    (scaled -1)
+                , Border.rounded <| scaled 0
+                , Background.color quoteColor
+                ]
+                (recurseOver blocks)
+            ]
+
+        List kind items ->
+            [ paragraph [] [ text "list" ] ]
+
+        PlainInlines inlines ->
+            -- TODO: How is this different from Paragraph?
+            [ paragraph [] <| parseInlines inlines ]
+
+        Block.Custom kind blocks ->
+            recurseOver blocks
+
+
+parseInline : Inline i -> List (Element Msg)
+parseInline inline =
+    let
+        recurseOver =
+            flatMap parseInline
+    in
+    case inline of
+        Text string ->
+            [ text string ]
+
+        HardLineBreak ->
+            [ text "*LINE BREAK*" ]
+
+        CodeInline string ->
+            [ el
+                [ Font.family
+                    [ Font.monospace ]
+                ]
+                (text string)
+            ]
+
+        Link url title inlines ->
+            [ link []
+                { url = url
+                , label =
+                    paragraph []
+                        (recurseOver inlines)
+                }
+            ]
+
+        Image source title _ ->
+            [ image
+                [ width <| px (scaled 12)
+                , alignLeft
+                ]
+                { src = source
+                , description =
+                    case title of
+                        Just text ->
+                            text
+
+                        Nothing ->
+                            ""
+                }
+            ]
+
+        HtmlInline _ _ inlines ->
+            recurseOver inlines
+
+        Emphasis delim inlines ->
+            recurseOver inlines
+
+        Inline.Custom kind inlines ->
+            recurseOver inlines

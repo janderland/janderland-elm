@@ -8,7 +8,7 @@ shopt -s nullglob
 
 DEST=$JANDER_BUILD
 ORIG=$JANDER_SOURCE
-FILES=( ${ORIG}/* )
+FILES=( ${ORIG}/* assets/* )
 
 
 
@@ -73,4 +73,3 @@ then
 else
     echo "Linked $COUNT source file"
 fi
-
