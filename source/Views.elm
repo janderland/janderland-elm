@@ -562,6 +562,9 @@ parseBlock block =
 
         recurseOver =
             flatMap parseBlock
+
+        blockSpacing =
+            spacingXY (scaled -1) 0
     in
     case block of
         BlankLine _ ->
@@ -582,29 +585,35 @@ parseBlock block =
                     else
                         scaled 4
             in
-            [ paragraph [ Font.size size ]
+            [ paragraph
+                [ Font.size size ]
                 (parseInlines inlines)
             ]
 
         CodeBlock kind code ->
             [ paragraph
-                [ Font.family [ Font.monospace ]
-                , paddingXY
+                [ paddingXY
                     (scaled 2)
                     (scaled -1)
+                , blockSpacing
+                , Font.family [ Font.monospace ]
                 , Border.width <| scaled -10
                 ]
                 [ text code ]
             ]
 
         Paragraph _ inlines ->
-            [ paragraph [] <| parseInlines inlines ]
+            [ paragraph
+                [ blockSpacing ]
+                (parseInlines inlines)
+            ]
 
         BlockQuote blocks ->
             [ paragraph
                 [ paddingXY
                     (scaled 0)
                     (scaled -1)
+                , blockSpacing
                 , Border.rounded <| scaled 0
                 , Background.color quoteColor
                 ]
@@ -616,7 +625,10 @@ parseBlock block =
 
         PlainInlines inlines ->
             -- TODO: How is this different from Paragraph?
-            [ paragraph [] <| parseInlines inlines ]
+            [ paragraph
+                [ blockSpacing ]
+                (parseInlines inlines)
+            ]
 
         Block.Custom kind blocks ->
             recurseOver blocks
@@ -655,6 +667,7 @@ parseInline inline =
         Image source title _ ->
             [ image
                 [ width <| px (scaled 12)
+                , paddingXY 0 <| scaled -2
                 , alignLeft
                 ]
                 { src = source
