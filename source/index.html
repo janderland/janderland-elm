@@ -2,14 +2,14 @@
 <html>
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Main</title>
     <script src="Janderland.js"></script>
 </head>
-<body>
-    <div id="elm"></div>
+<body id="body">
     <script>
         const app = Elm.Janderland.init({
-            node: document.getElementById('elm'),
+            node: document.getElementById('body'),
             flags: {
                 width: window.innerWidth
             }
