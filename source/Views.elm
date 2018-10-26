@@ -564,7 +564,7 @@ parseBlock block =
             flatMap parseBlock
 
         blockSpacing =
-            spacingXY (scaled -1) 0
+            spacingXY (scaled 0) 0
     in
     case block of
         BlankLine _ ->
@@ -667,7 +667,7 @@ parseInline inline =
         Image source title _ ->
             [ image
                 [ width <| px (scaled 12)
-                , paddingXY 0 <| scaled -2
+                , paddingXY 0 (scaled -3)
                 , alignLeft
                 ]
                 { src = source
