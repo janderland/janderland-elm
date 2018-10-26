@@ -109,6 +109,7 @@ let parseFile = (file) => {
         /^(.*)---\n(.*)$/s
     )
     parsed.meta = parseMeta(parsed.meta)
+    parsed.body = parseBody(parsed.body)
     return parsed
 }
 
@@ -162,6 +163,14 @@ let parseTags = (tags) =>
               .split('-')
               .map((s) => s.trim())
               .filter((s) => !isEmpty(s))
+
+
+
+// Escape the double quotes so we don't
+// break strings in the output Elm.
+
+let parseBody = (body) =>
+    body.replace(/\"/g, '\\"')
 
 
 
@@ -266,7 +275,10 @@ contentDict =
 
 
 let generateElm = (parsedFiles) =>
-    handlebars.compile(template)({ contents: parsedFiles })
+    handlebars.compile(
+      template,
+      { noEscape: true }
+    )({ contents: parsedFiles })
 
 
 
