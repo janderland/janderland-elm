@@ -8,27 +8,28 @@
 ---
 
 I've been building this form of expression for a couple
-years now. And what better form but self expression; so it's
-first words will be about itself.
+years now, and what better form but self expression, so this
+site's first words will be about itself.
 
-Welcome to the __Land of Jander__... a testament to how I spend my time.
-
-Besides providing me with a place for self expression, __jander.land__ is my
-first Elm application, my second code-generation pipeline, and a welcome return
-to UI design. It's also burned up quite a bit of time.
+Welcome to the _Land of Jander_, a testament to how I spend
+my time. Besides providing me with a place for self
+expression, __jander.land__ is my first Elm application, my
+second code-generation pipeline, and a project that took way
+more of my time then it should've.
 
 ![Old Site](/oldsite.jpg)
 
 The site's birth was during March of 2016. Originally, it
-was built on the Hexo Blog Framework, with a SMACSS Sass
-stylesheet and a small bit of custom JavaScript. This custom
-JavaScript spawned the creation of one of my major projects.
-At this point I hadn't discovered functional programming,
-and while implementing a pagination feature, I realized the
-utility of a list of functions being applied to a stream of
-data, the result of each function piped into the next.
-I wrote a lot of imperative code to enable simple function
-composition. This was my gateway to a new way of thinking.
+was built upon the Hexo Blog Framework, a static-site
+generator, combined with some Sass and JavaScript I wrote.
+This custom JavaScript spawned the creation of one of my
+major projects. At this point I hadn't discovered functional
+programming, and while implementing a pagination feature,
+I realized the utility of a list of functions being applied
+to a stream of data, the result of each function piped into
+the next. I wrote a lot of imperative code to enable simple
+function composition. This was my gateway to a new way of
+thinking.
 
 Since then it has been completely rewritten with a focus on
 content rather than features. I emerged from my rabbit hole
@@ -60,6 +61,10 @@ The Design of JANDER.LAND
 - SPA state machine
 - Elm-UI
 - Scaling
+
+```
+let code = eval("var code =");
+```
 
 
 # CONTENT: content/The-Promised-Land.md
