@@ -564,7 +564,7 @@ parseBlock block =
             flatMap parseBlock
 
         blockSpacing =
-            spacingXY (scaled 0) 0
+            spacingXY (scaled 2) (scaled -6)
     in
     case block of
         BlankLine _ ->
@@ -586,16 +586,21 @@ parseBlock block =
                         scaled 4
             in
             [ paragraph
-                [ Font.size size ]
+                [ Font.size size
+                , paddingEach
+                    { top = scaled 3
+                    , bottom = 0
+                    , right = 0
+                    , left = 0
+                    }
+                ]
                 (parseInlines inlines)
             ]
 
         CodeBlock kind code ->
             [ paragraph
-                [ paddingXY
-                    (scaled 2)
-                    (scaled -1)
-                , blockSpacing
+                [ blockSpacing
+                , paddingXY (scaled 2) (scaled -1)
                 , Font.family [ Font.monospace ]
                 , Border.width <| scaled -10
                 ]
@@ -603,30 +608,32 @@ parseBlock block =
             ]
 
         Paragraph _ inlines ->
-            [ paragraph
-                [ blockSpacing ]
+            [ paragraph [ blockSpacing ]
                 (parseInlines inlines)
             ]
 
         BlockQuote blocks ->
-            [ paragraph
-                [ paddingXY
-                    (scaled 0)
-                    (scaled -1)
-                , blockSpacing
-                , Border.rounded <| scaled 0
-                , Background.color quoteColor
+            [ column
+                [ width fill ]
+                [ paragraph
+                    [ blockSpacing
+                    , paddingXY (scaled 0) (scaled -1)
+                    , Background.color quoteColor
+                    , Border.rounded <| scaled 0
+                    , width shrink
+                    , alignLeft
+                    ]
+                    (recurseOver blocks)
                 ]
-                (recurseOver blocks)
             ]
 
         List kind items ->
             [ paragraph [] [ text "list" ] ]
 
         PlainInlines inlines ->
-            -- TODO: How is this different from Paragraph?
-            [ paragraph
-                [ blockSpacing ]
+            -- TODO: How is this different
+            -- from Paragraph?
+            [ paragraph [ blockSpacing ]
                 (parseInlines inlines)
             ]
 
@@ -648,10 +655,7 @@ parseInline inline =
             [ text "*LINE BREAK*" ]
 
         CodeInline string ->
-            [ el
-                [ Font.family
-                    [ Font.monospace ]
-                ]
+            [ el [ Font.family [ Font.monospace ] ]
                 (text string)
             ]
 
@@ -659,27 +663,45 @@ parseInline inline =
             [ link []
                 { url = url
                 , label =
-                    paragraph []
-                        (recurseOver inlines)
+                    paragraph [] <| recurseOver inlines
                 }
             ]
 
         Image source title _ ->
-            [ image
-                [ width <| px (scaled 12)
-                , paddingXY 0 (scaled -3)
-                , alignLeft
-                ]
-                { src = source
-                , description =
-                    case title of
-                        Just text ->
-                            text
+            --, paddingXY 0 (scaled -1)
+            let
+                cover =
+                    el
+                        [ width <| fill
+                        , height <| fill
+                        , Background.color backColor
+                        , alpha 0.3
+                        ]
+                        none
 
-                        Nothing ->
-                            ""
-                }
-            ]
+                img =
+                    image [ width fill, inFront cover ]
+                        { src = source
+                        , description =
+                            case title of
+                                Just text ->
+                                    text
+
+                                Nothing ->
+                                    ""
+                        }
+
+                roundBorder =
+                    el
+                        [ Border.rounded <| scaled -4
+                        , width <| px (scaled 12)
+                        , clip
+                        ]
+
+                addPadding =
+                    el [ paddingXY 0 (scaled -1), alignLeft ]
+            in
+            [ img |> roundBorder |> addPadding ]
 
         HtmlInline _ _ inlines ->
             recurseOver inlines
