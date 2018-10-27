@@ -685,7 +685,19 @@ parseInline inline =
             recurseOver inlines
 
         Emphasis delim inlines ->
+            let
+                attribs =
+                    if delim > 1 then
+                        [ Font.bold ]
+
+                    else if delim == 1 then
+                        [ Font.italic ]
+
+                    else
+                        []
+            in
             recurseOver inlines
+                |> List.map (\i -> el attribs i)
 
         Inline.Custom kind inlines ->
             recurseOver inlines

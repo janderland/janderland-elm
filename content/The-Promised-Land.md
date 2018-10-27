@@ -11,13 +11,11 @@ I've been building this form of expression for a couple
 years now. And what better form but self expression; so it's
 first words will be about itself.
 
-Welcome to the Land of Jander; a testament to how I spend my
-time.
+Welcome to the __Land of Jander__... a testament to how I spend my time.
 
-Besides providing me with a place for self expression,
-JANDER.LAND is my first Elm application, my second
-code-generation pipeline, and a welcome return to UI design.
-It's also burned up quite a bit of time.
+Besides providing me with a place for self expression, __jander.land__ is my
+first Elm application, my second code-generation pipeline, and a welcome return
+to UI design. It's also burned up quite a bit of time.
 
 ![Old Site](/oldsite.jpg)
 
