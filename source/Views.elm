@@ -202,6 +202,10 @@ quoteColor =
     base01
 
 
+codeColor =
+    base02
+
+
 foreColor =
     base05
 
@@ -598,13 +602,20 @@ parseBlock block =
             ]
 
         CodeBlock kind code ->
-            [ paragraph
-                [ blockSpacing
-                , paddingXY (scaled 2) (scaled -1)
-                , Font.family [ Font.monospace ]
-                , Border.width <| scaled -10
+            [ column
+                [ width fill ]
+                [ paragraph
+                    [ blockSpacing
+                    , paddingXY (scaled 0) (scaled -1)
+                    , Font.family [ Font.monospace ]
+                    , Border.rounded <| scaled 0
+                    , Border.width <| scaled -10
+                    , Border.color codeColor
+                    , width shrink
+                    , alignLeft
+                    ]
+                    [ text code ]
                 ]
-                [ text code ]
             ]
 
         Paragraph _ inlines ->
@@ -668,7 +679,6 @@ parseInline inline =
             ]
 
         Image source title _ ->
-            --, paddingXY 0 (scaled -1)
             let
                 cover =
                     el
