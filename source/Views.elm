@@ -575,7 +575,7 @@ parseBlock block =
             []
 
         ThematicBreak ->
-            [ text "---" ]
+            []
 
         Heading _ level inlines ->
             let
@@ -619,7 +619,10 @@ parseBlock block =
             ]
 
         Paragraph _ inlines ->
-            [ paragraph [ blockSpacing ]
+            [ paragraph
+                [ Font.family [ Font.serif ]
+                , blockSpacing
+                ]
                 (parseInlines inlines)
             ]
 
