@@ -8,8 +8,8 @@
 ---
 
 I've been building this form of expression for a couple
-years now, and what better form but self expression, so this
-site's first words will be about itself.
+years now, and what better form then self expression, so
+this site's first words will be autobiographical.
 
 Welcome to the _Land of Jander_, a testament to how I spend
 my time. Besides providing me with a place for self
@@ -20,10 +20,14 @@ more of my time then it should've.
 ![Old Site](/oldsite.jpg)
 
 The site's birth was during March of 2016. Originally, it
-was built upon the Hexo Blog Framework, a static-site
-generator, combined with some Sass and JavaScript I wrote.
-This custom JavaScript spawned the creation of one of my
-major projects. At this point I hadn't discovered functional
+was built upon the Hexo Blog Framework combined with some
+Sass and JavaScript I wrote. This setup ultimately became to
+unwieldy for my liking, but it did lead me on some
+interesting journies. While attempting to paginate and
+search over a list of data entries.
+
+This JavaScript spawned the creation of one of my major
+projects. At this point I hadn't discovered functional
 programming, and while implementing a pagination feature,
 I realized the utility of a list of functions being applied
 to a stream of data, the result of each function piped into
