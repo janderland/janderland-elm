@@ -231,6 +231,18 @@ oghamColor =
 
 
 
+-- Fonts
+
+
+mainFont =
+    Font.typeface "Merriweather"
+
+
+titleFont =
+    Font.typeface "Roboto"
+
+
+
 -- View & Root
 
 
@@ -252,6 +264,7 @@ view model =
         [ root model children
             |> layout
                 [ Background.color backColor
+                , Font.family [ mainFont ]
                 , Font.size <| scaled 1
                 , Font.color foreColor
                 ]
@@ -286,17 +299,21 @@ coverBar model =
                 [ centerX
                 , Font.size <| scaled 9
                 , Font.color landColor
+                , Font.family [ titleFont ]
                 ]
                 (text ".land")
             ]
 
+        commonAttribs =
+            [ Font.bold, Font.family [ titleFont ] ]
+
         title =
             case model.layout of
                 Full ->
-                    paragraph [ Font.bold ] janderland
+                    paragraph commonAttribs janderland
 
                 Mini ->
-                    column [ Font.bold ] janderland
+                    column commonAttribs janderland
 
         ogham =
             el [ centerX, Font.color <| oghamColor ]
@@ -315,7 +332,7 @@ topBar model =
         coverLink =
             link [ Font.bold ]
                 { label =
-                    paragraph []
+                    paragraph [ Font.family [ titleFont ] ]
                         [ el
                             [ Font.size <| scaled 3
                             , Font.color janderColor
@@ -416,6 +433,7 @@ chapterSummary content =
             link
                 [ Font.size <| scaled 3
                 , Font.color titleColor
+                , Font.family [ titleFont ]
                 ]
                 { label = text content.name
                 , url = postFrag
@@ -458,6 +476,7 @@ chapterPage model content =
             paragraph
                 [ Font.size <| scaled 8
                 , Font.color titleColor
+                , Font.family [ titleFont ]
                 , Font.bold
                 ]
                 [ text content.name ]
@@ -591,6 +610,7 @@ parseBlock block =
             in
             [ paragraph
                 [ Font.size size
+                , Font.family [ titleFont ]
                 , paddingEach
                     { top = scaled 3
                     , bottom = 0
@@ -620,9 +640,7 @@ parseBlock block =
 
         Paragraph _ inlines ->
             [ paragraph
-                [ Font.family [ Font.serif ]
-                , blockSpacing
-                ]
+                [ blockSpacing ]
                 (parseInlines inlines)
             ]
 
