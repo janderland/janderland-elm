@@ -11,7 +11,7 @@ import Element.Font as Font
 import Element.Input as Input
 import Html exposing (Html)
 import Markdown
-import Markdown.Block as Block exposing (Block(..))
+import Markdown.Block as Block exposing (Block(..), ListType(..))
 import Markdown.Config as MdConfig
 import Markdown.Inline as Inline exposing (Inline(..))
 import Ogham
@@ -639,8 +639,7 @@ parseBlock block =
             ]
 
         Paragraph _ inlines ->
-            [ paragraph
-                [ blockSpacing ]
+            [ paragraph [ blockSpacing ]
                 (parseInlines inlines)
             ]
 
@@ -659,8 +658,40 @@ parseBlock block =
                 ]
             ]
 
-        List kind items ->
-            [ paragraph [] [ text "list" ] ]
+        List details items ->
+            let
+                startNum =
+                    case details.type_ of
+                        Unordered ->
+                            0
+
+                        Ordered start ->
+                            start
+
+                endNum =
+                    startNum + List.length items
+
+                bullets =
+                    List.range startNum endNum
+                        |> List.map
+                            (\n ->
+                                case details.type_ of
+                                    Unordered ->
+                                        "•"
+
+                                    Ordered _ ->
+                                        String.fromInt n ++ "."
+                            )
+
+                entry bullet item =
+                    row [ spacing <| scaled -1 ]
+                        [ el [] <| text bullet
+                        , paragraph [] <| recurseOver item
+                        ]
+            in
+            [ column [ spacing <| scaled -4 ]
+                (List.map2 entry bullets items)
+            ]
 
         PlainInlines inlines ->
             -- TODO: How is this different
@@ -684,7 +715,7 @@ parseInline inline =
             [ text string ]
 
         HardLineBreak ->
-            [ text "*LINE BREAK*" ]
+            []
 
         CodeInline string ->
             [ el [ Font.family [ Font.monospace ] ]

@@ -79,7 +79,7 @@ Extending the Markdown Syntax
 # GENERATE: scripts/generate.js
 
 The Generation Pipeline
-- Split the content files into branches
-- Design code paths for every branch
-- Fail quick
-- Pipes are the main abstraction
+1. Split the content files into branches
+2. Design code paths for every branch
+3. Fail quick
+4. Pipes are the main abstraction
