@@ -723,12 +723,11 @@ parseInline inline =
             ]
 
         Link url title inlines ->
-            [ link []
-                { url = url
-                , label =
-                    paragraph [] <| recurseOver inlines
-                }
-            ]
+            let
+                linkify i =
+                    link [] { url = url, label = i }
+            in
+            List.map linkify <| recurseOver inlines
 
         Image source title _ ->
             let
