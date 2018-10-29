@@ -1,4 +1,4 @@
-module Ogham exposing (Mapper, OghamChar(..), fromString, withMapper)
+module Ogham exposing (Mapper, OghamChar(..), fromString)
 
 
 type OghamChar
@@ -44,38 +44,25 @@ fromString =
         >> String.fromList
 
 
-withMapper : Mapper -> String -> String
-withMapper mapper string =
-    string
-        |> String.toLower
-        |> String.toList
-        |> parseChars mapper
-        |> List.map toChar
-        |> String.fromList
-
-
 parseChars : Mapper -> List Char -> List OghamChar
 parseChars mapper list =
     let
-        pop l =
-            ( List.head l, List.drop 1 l )
-
         recurse =
             parseChars mapper
 
         sParse =
             singleParse mapper
     in
-    case pop list of
-        ( Nothing, _ ) ->
+    case list of
+        [] ->
             []
 
-        ( Just head1, dropped1 ) ->
-            case pop dropped1 of
-                ( Nothing, _ ) ->
+        head1 :: dropped1 ->
+            case dropped1 of
+                [] ->
                     [ sParse head1 ]
 
-                ( Just head2, dropped2 ) ->
+                head2 :: dropped2 ->
                     case ( head1, head2 ) of
                         ( 'a', 'e' ) ->
                             AE :: recurse dropped2
@@ -186,39 +173,6 @@ default char =
 
         'y' ->
             UI
-
-        '0' ->
-            H
-
-        '1' ->
-            B
-
-        '2' ->
-            D
-
-        '3' ->
-            L
-
-        '4' ->
-            T
-
-        '5' ->
-            F
-
-        '6' ->
-            C
-
-        '7' ->
-            S
-
-        '8' ->
-            Q
-
-        '9' ->
-            N
-
-        '/' ->
-            M
 
         _ ->
             Space
