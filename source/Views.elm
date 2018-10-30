@@ -441,13 +441,13 @@ chapterSummary content =
 
         excerpt =
             content.body
+                |> filterSpecials
                 |> String.words
                 |> List.take 20
                 |> String.join " "
 
         summary =
-            paragraph []
-                [ text <| excerpt ++ "..." ]
+            paragraph [] [ text <| excerpt ++ "..." ]
     in
     column [ spacing <| scaled -1 ]
         [ title
@@ -498,7 +498,7 @@ chapterPage model content =
     in
     [ topBar model
     , header
-    , parseMd content.body
+    , renderMd content.body
     ]
 
 
@@ -532,8 +532,8 @@ notFoundPage _ =
 -- Markdown Bindings
 
 
-parseMd : String -> Element Msg
-parseMd markdown =
+renderMd : String -> Element Msg
+renderMd markdown =
     let
         config =
             Just
@@ -542,8 +542,7 @@ parseMd markdown =
                 }
     in
     Block.parse config markdown
-        |> Debug.log "Parsed MD"
-        |> flatMap parseBlock
+        |> flatMap renderBlock
         |> textColumn [ spacing <| scaled 2 ]
 
 
@@ -577,14 +576,14 @@ flatMap func =
     List.map func >> List.foldr (++) []
 
 
-parseBlock : Block b i -> List (Element Msg)
-parseBlock block =
+renderBlock : Block b i -> List (Element Msg)
+renderBlock block =
     let
-        parseInlines =
-            flatMap parseInline
+        renderInlines =
+            flatMap renderInline
 
         recurseOver =
-            flatMap parseBlock
+            flatMap renderBlock
 
         blockSpacing =
             spacingXY (scaled 2) (scaled -6)
@@ -618,7 +617,7 @@ parseBlock block =
                     , left = 0
                     }
                 ]
-                (parseInlines inlines)
+                (renderInlines inlines)
             ]
 
         CodeBlock kind code ->
@@ -640,7 +639,7 @@ parseBlock block =
 
         Paragraph _ inlines ->
             [ paragraph [ blockSpacing ]
-                (parseInlines inlines)
+                (renderInlines inlines)
             ]
 
         BlockQuote blocks ->
@@ -694,21 +693,17 @@ parseBlock block =
             ]
 
         PlainInlines inlines ->
-            -- TODO: How is this different
-            -- from Paragraph?
-            [ paragraph [ blockSpacing ]
-                (parseInlines inlines)
-            ]
+            renderInlines inlines
 
-        Block.Custom kind blocks ->
+        Block.Custom _ blocks ->
             recurseOver blocks
 
 
-parseInline : Inline i -> List (Element Msg)
-parseInline inline =
+renderInline : Inline i -> List (Element Msg)
+renderInline inline =
     let
         recurseOver =
-            flatMap parseInline
+            flatMap renderInline
     in
     case inline of
         Text string ->
@@ -780,7 +775,54 @@ parseInline inline =
                         []
             in
             recurseOver inlines
-                |> List.map (\i -> el attribs i)
+                |> List.map (el attribs)
 
         Inline.Custom kind inlines ->
             recurseOver inlines
+
+
+filterSpecials : String -> String
+filterSpecials markdown =
+    let
+        config =
+            Just
+                { softAsHardLineBreak = False
+                , rawHtml = MdConfig.DontParse
+                }
+    in
+    Block.parse config markdown
+        |> flatMap filterBlock
+        |> String.fromList
+
+
+filterBlock : Block b i -> List Char
+filterBlock block =
+    case block of
+        Paragraph _ inlines ->
+            inlines |> flatMap filterInline
+
+        _ ->
+            []
+
+
+filterInline : Inline i -> List Char
+filterInline inline =
+    let
+        recurseOver =
+            flatMap filterInline
+    in
+    case inline of
+        Text string ->
+            String.toList string
+
+        CodeInline string ->
+            String.toList string
+
+        Link _ _ inlines ->
+            recurseOver inlines
+
+        Emphasis delim inlines ->
+            recurseOver inlines
+
+        _ ->
+            []
