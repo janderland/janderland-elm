@@ -72,8 +72,8 @@ scaled x =
    - If specialized logic is needed, there
      are two layout states to specialize for:
      `Full` & `Mini`. The current layout state
-     is determined by the
-     `layoutBoundary` value.
+     is determined by the `layoutBoundary`
+     value.
    - No matter what is being displayed, the
      content's width shall not exceed the
      `maxContentWidth` value.
@@ -91,13 +91,13 @@ layoutBoundary =
 
 
 clampWidth : Int -> Int
-clampWidth width =
-    min maxContentWidth width
+clampWidth viewportWidth =
+    min maxContentWidth viewportWidth
 
 
 layoutFromWidth : Int -> Layout
-layoutFromWidth width =
-    if width > layoutBoundary then
+layoutFromWidth viewportWidth =
+    if viewportWidth > layoutBoundary then
         Full
 
     else
@@ -191,7 +191,12 @@ base0F =
 
 
 
--- Color Bindings
+{- Color Bindings
+
+   Here is where I decide which of the base16
+   colors are used on the different parts of
+   my site.
+-}
 
 
 backColor =
@@ -361,6 +366,7 @@ coverPage model =
             contentList |> chapterList model
     in
     [ coverBar model
+    , el [ centerX ] <| paragraph [] [ text <| "on its way…" ]
     , chapters
     ]
 
