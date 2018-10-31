@@ -36,11 +36,14 @@ let readdir = promise.promisify(fs.readdir)
 // an immediate child of `dir`.
 
 let readFilesFromDir = (dir) =>
-    readdir(dir).then((fileNames) =>
-        promise.all(fileNames.map((fileName) =>
-            readFile(path.join(dir, fileName), 'utf8')
+    readdir(dir, { withFileTypes: true })
+        .then((files) => promise.all(
+            files.filter(file =>
+                file.isFile()
+            ).map((file) =>
+                readFile(path.join(dir, file.name), 'utf8')
+            )
         ))
-    )
 
 
 
