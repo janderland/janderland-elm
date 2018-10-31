@@ -14,16 +14,16 @@ type Page
 
 fromRoute : Maybe Route -> Page
 fromRoute =
-    Maybe.map
-        (\route ->
+    let
+        page route =
             case route of
                 Route.Cover ->
                     Cover
 
                 Route.Chapter id ->
                     chapter id |> withDefault NotFound
-        )
-        >> withDefault NotFound
+    in
+    Maybe.map page >> withDefault NotFound
 
 
 chapter : String -> Maybe Page
