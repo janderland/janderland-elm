@@ -68,27 +68,35 @@ let readNamesFromDir = (dir) =>
 
 
 
-let loadVersions = (args) => {
-    let repo = args[1]
-    let names = contentNames(args[0])
-    return promise.resolve(Git.Reference.list(repo))
+let readingContent = (contentDir) => ({repo, versions}) =>
+    promise.reduce(versions, (content, {name, versions}) =>
+        promise.resolve(
+            repo.checkoutBranch(refShorthand(name/*,  version */))
+        )
+    , [])
+
+
+
+let loadVersions = ({names, repo}) =>
+    promise.resolve(Git.Reference.list(repo))
         .map((id) => Git.Reference.lookup(repo, id))
         .filter((ref) => ref.isTag())
         .map(refCaptures)
         .filter((captures) => captures != null)
-        .filter((captures) => names.includes(captures[0]))
+        .filter(([name, _]) => names.includes(name))
         .then(consolidateVersions(names))
-}
+        .filter(({_, versions}) => versions.length > 0)
+        .then((versions) => ({repo, versions}))
 
 
 
 let consolidateVersions = (names) => (versions) =>
-    names.map((name) => [
+    names.map((name) => ({
         name,
-        versions.filter((version) =>
-            version[0] == name
-        ).map((version) => version[1])
-    ])
+        versions: versions.filter(([name_, _]) =>
+            name_ == name
+        ).map(([_, version]) => version)
+    }))
 
 
 
@@ -109,6 +117,10 @@ let randomName = () =>
 
 let refCaptures = (ref) =>
     captures(ref.shorthand(), /(.+)_V(.+)/)
+
+
+let refShorthand = (name, version) =>
+    name + '_V' + version
 
 
 
@@ -441,14 +453,20 @@ Promise.all([
   Git.Clone(".", path.join(os.tmpdir(), randomName()))
 ])
 
+    .then(([filenames, repo]) => ({
+        names: contentNames(filenames),
+        repo
+    }))
+
     .then(log('Loading versions'))
     .then(loadVersions)
     .then(logValue)
 
-/*
     .then(log('Reading content'))
-    .then(readingContent)
+    .then(readingContent(env.JANDER_CONTENT))
+    .then(logValue)
 
+/*
     .then(log('Parsing content'))
     .map(parseFile)
 
