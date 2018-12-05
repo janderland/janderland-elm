@@ -7,16 +7,20 @@ let format = require('string-format')
 let promise = require('bluebird')
 let crypto = require('crypto')
 let moment = require('moment')
+let Git = require('nodegit')
 let path = require('path')
+let os = require('os')
 let fs = require('fs')
 
 let {
     zipObject,
     isEmpty,
+    update,
     reduce,
     sortBy,
     range,
-    tail
+    tail,
+    set
 } = require('lodash')
 
 let writeFile = promise.promisify(fs.writeFile)
@@ -35,6 +39,7 @@ let readdir = promise.promisify(fs.readdir)
 // strings (UTF-8 is assumed) of every file that's
 // an immediate child of `dir`.
 
+/*
 let readFilesFromDir = (dir) =>
     readdir(dir, { withFileTypes: true })
         .then((files) => promise.all(
@@ -44,6 +49,66 @@ let readFilesFromDir = (dir) =>
                 readFile(path.join(dir, file.name), 'utf8')
             )
         ))
+*/
+
+
+
+// Returns a promise for the array of file names
+// of every file that's an immediate child of `dir`.
+
+let readNamesFromDir = (dir) =>
+    readdir(dir, { withFileTypes: true })
+        .then((files) => promise.all(
+            files.filter(file =>
+                file.isFile()
+            ).map((file) =>
+              file.name
+            )
+        ))
+
+
+
+let loadVersions = (args) => {
+    let repo = args[1]
+    let names = contentNames(args[0])
+    return promise.resolve(Git.Reference.list(repo))
+        .map((id) => Git.Reference.lookup(repo, id))
+        .filter((ref) => ref.isTag())
+        .map(refCaptures)
+        .filter((captures) => captures != null)
+        .filter((captures) => names.includes(captures[0]))
+        .then(consolidateVersions(names))
+}
+
+
+
+let consolidateVersions = (names) => (versions) =>
+    names.map((name) => [
+        name,
+        versions.filter((version) =>
+            version[0] == name
+        ).map((version) => version[1])
+    ])
+
+
+
+let contentNames = (filenames) =>
+    filenames.map((name) =>
+        name.match(/^(.+)\.md$/)[1]
+    )
+
+
+
+let randomName = () =>
+    Math.random()
+        .toString(36)
+        .replace(/[^a-z]+/g, '')
+        .substr(0, 5)
+
+
+
+let refCaptures = (ref) =>
+    captures(ref.shorthand(), /(.+)_V(.+)/)
 
 
 
@@ -370,7 +435,19 @@ let env = reduce([
 
 
 
-readFilesFromDir(env.JANDER_CONTENT)
+//readFilesFromDir(env.JANDER_CONTENT)
+Promise.all([
+  readNamesFromDir(env.JANDER_CONTENT),
+  Git.Clone(".", path.join(os.tmpdir(), randomName()))
+])
+
+    .then(log('Loading versions'))
+    .then(loadVersions)
+    .then(logValue)
+
+/*
+    .then(log('Reading content'))
+    .then(readingContent)
 
     .then(log('Parsing content'))
     .map(parseFile)
@@ -393,6 +470,7 @@ readFilesFromDir(env.JANDER_CONTENT)
         env.JANDER_GENERATED
     )))
 
+*/
     .catch((err) => {
         console.error(err)
         process.exitCode = 1
