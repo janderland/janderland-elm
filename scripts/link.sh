@@ -16,8 +16,8 @@ FILES=( ${ORIG}/* assets/* )
 
 if ! [ -e $ORIG ]
 then
-    echo "Source dir \"$ORIG\" doesn't exist"
-    exit 1
+  echo "Source dir \"$ORIG\" doesn't exist"
+  exit 1
 fi
 
 
@@ -26,8 +26,8 @@ fi
 
 if [ ${#FILES[@]} -eq 0 ]
 then
-    echo "No files to link"
-    exit 0
+  echo "No files to link"
+  exit 0
 fi
 
 
@@ -36,8 +36,8 @@ fi
 
 if ! mkdir -p $DEST
 then
-    echo "Failed to create dir \"$DEST\""
-    exit 1
+  echo "Failed to create dir \"$DEST\""
+  exit 1
 fi
 
 
@@ -53,13 +53,13 @@ cd $DEST
 
 for FILE in ${FILES[@]}
 do
-    LINK=$(basename $FILE)
-    rm -f $LINK
-    if ! ln -s ../${FILE} $LINK
-    then
-        echo "Failed to link \"$FILE\""
-        exit 1
-    fi
+  LINK=$(basename $FILE)
+  rm -f $LINK
+  if ! ln -s ../${FILE} $LINK
+  then
+    echo "Failed to link \"$FILE\""
+    exit 1
+  fi
 done
 
 
@@ -69,7 +69,7 @@ done
 COUNT=${#FILES[@]}
 if [ $COUNT -ne 1 ]
 then
-    echo "Linked $COUNT source files"
+  echo "Linked $COUNT source files"
 else
-    echo "Linked $COUNT source file"
+  echo "Linked $COUNT source file"
 fi

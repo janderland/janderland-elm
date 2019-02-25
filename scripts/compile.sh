@@ -4,4 +4,4 @@ MAIN=$JANDER_MAIN
 BUILD=$JANDER_BUILD
 
 elm make ${BUILD}/${MAIN} \
-    --output ${BUILD}/${MAIN%.*}.js
+  --output ${BUILD}/${MAIN%.*}.js

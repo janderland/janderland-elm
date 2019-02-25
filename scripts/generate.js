@@ -11,12 +11,12 @@ let path = require('path')
 let fs = require('fs')
 
 let {
-    zipObject,
-    isEmpty,
-    reduce,
-    sortBy,
-    range,
-    tail
+  zipObject,
+  isEmpty,
+  reduce,
+  sortBy,
+  range,
+  tail
 } = require('lodash')
 
 let writeFile = promise.promisify(fs.writeFile)
@@ -36,14 +36,14 @@ let readdir = promise.promisify(fs.readdir)
 // an immediate child of `dir`.
 
 let readFilesFromDir = (dir) =>
-    readdir(dir, { withFileTypes: true })
-        .then((files) => promise.all(
-            files.filter(file =>
-                file.isFile()
-            ).map((file) =>
-                readFile(path.join(dir, file.name), 'utf8')
-            )
-        ))
+  readdir(dir, { withFileTypes: true })
+    .then((files) => promise.all(
+      files.filter(file =>
+        file.isFile()
+      ).map((file) =>
+        readFile(path.join(dir, file.name), 'utf8')
+      )
+    ))
 
 
 
@@ -51,7 +51,7 @@ let readFilesFromDir = (dir) =>
 // from within a ternary operator.
 
 let throwErr = (message) =>
-    (() => { throw message })()
+  (() => { throw message })()
 
 
 
@@ -60,8 +60,8 @@ let throwErr = (message) =>
 // on to the next `then()` call.
 
 let log = (message) => (value) => {
-    console.log(message)
-    return value
+  console.log(message)
+  return value
 }
 
 
@@ -72,8 +72,8 @@ let log = (message) => (value) => {
 // call.
 
 let logValue = (value) => {
-    console.log(value)
-    return value
+  console.log(value)
+  return value
 }
 
 
@@ -82,9 +82,9 @@ let logValue = (value) => {
 // of spaces.
 
 let spaces = (count) =>
-    reduce(range(count),
-        (acc) => acc + ' ',
-    '')
+  reduce(range(count),
+    (acc) => acc + ' ',
+  '')
 
 
 
@@ -92,9 +92,9 @@ let spaces = (count) =>
 // prepended to each line.
 
 let indentLines = (string, tab) =>
-    reduce(string.split('\n'),
-        (acc, s) => acc + tab + s + '\n',
-    '')
+  reduce(string.split('\n'),
+    (acc, s) => acc + tab + s + '\n',
+  '')
 
 
 
@@ -107,13 +107,13 @@ let indentLines = (string, tab) =>
 // Parses a content file.
 
 let parseFile = (file) => {
-    let parsed = fromCaptures(
-        file, ['meta', 'body'],
-        /^(.*)---\n(.*)$/s
-    )
-    parsed.meta = parseMeta(parsed.meta)
-    parsed.body = parseBody(parsed.body)
-    return parsed
+  let parsed = fromCaptures(
+    file, ['meta', 'body'],
+    /^(.*)---\n(.*)$/s
+  )
+  parsed.meta = parseMeta(parsed.meta)
+  parsed.body = parseBody(parsed.body)
+  return parsed
 }
 
 
@@ -121,14 +121,14 @@ let parseFile = (file) => {
 // Parses a content's meta section.
 
 let parseMeta = (meta) => {
-    let parsed = fromCaptures(
-        meta, ['title', 'date', 'tags'],
-        /^# ([^\n]+)\n\s*([^\n]+)\n\s*(-.+)$/s
-    )
-    parsed.date = parseDate(parsed.date)
-    parsed.tags = parseTags(parsed.tags)
-    parsed.id = parseId(parsed)
-    return parsed
+  let parsed = fromCaptures(
+    meta, ['title', 'date', 'tags'],
+    /^# ([^\n]+)\n\s*([^\n]+)\n\s*(-.+)$/s
+  )
+  parsed.date = parseDate(parsed.date)
+  parsed.tags = parseTags(parsed.tags)
+  parsed.id = parseId(parsed)
+  return parsed
 }
 
 
@@ -136,10 +136,10 @@ let parseMeta = (meta) => {
 // Parses the date string into POSIX time.
 
 let parseDate = (date) => {
-    let m = moment(date)
-    return m.isValid()
-        ? m.valueOf()
-        : throwErr('Failed to parse date '+date)
+  let m = moment(date)
+  return m.isValid()
+    ? m.valueOf()
+    : throwErr('Failed to parse date '+date)
 }
 
 
@@ -148,9 +148,9 @@ let parseDate = (date) => {
 // title and date.
 
 let parseId = (parsed) => {
-    let hash = crypto.createHash('sha256')
-    hash.update(parsed.title + parsed.date)
-    return hash.digest('hex').substring(0,8)
+  let hash = crypto.createHash('sha256')
+  hash.update(parsed.title + parsed.date)
+  return hash.digest('hex').substring(0,8)
 }
 
 
@@ -159,13 +159,13 @@ let parseId = (parsed) => {
 // meta section.
 
 let parseTags = (tags) =>
-    isEmpty(tags)
-        ? throwErr('Content tags must '+
-            'have at least one item')
-        : tags.replace(/\s+/g, ' ')
-              .split('-')
-              .map((s) => s.trim())
-              .filter((s) => !isEmpty(s))
+  isEmpty(tags)
+    ? throwErr('Content tags must '+
+      'have at least one item')
+    : tags.replace(/\s+/g, ' ')
+        .split('-')
+        .map((s) => s.trim())
+        .filter((s) => !isEmpty(s))
 
 
 
@@ -173,7 +173,7 @@ let parseTags = (tags) =>
 // break strings in the output Elm.
 
 let parseBody = (body) =>
-    body.replace(/\"/g, '\\"')
+  body.replace(/\"/g, '\\"')
 
 
 
@@ -184,10 +184,10 @@ const captureErrMsg = `
 Missing capture {}
 
 in string...
-    {}
+  {}
 
 with regex...
-    {}
+  {}
 `
 
 
@@ -196,12 +196,12 @@ with regex...
 // is missing for what regex in what file.
 
 let captureErr = (file, index, regex) =>
-    throwErr(format(
-        captureErrMsg,
-        index,
-        indentLines(file, spaces(4)).trim(),
-        regex
-    ))
+  throwErr(format(
+    captureErrMsg,
+    index,
+    indentLines(file, spaces(4)).trim(),
+    regex
+  ))
 
 
 
@@ -211,14 +211,14 @@ let captureErr = (file, index, regex) =>
 // enough captures for the names provided, an error is thrown.
 
 let fromCaptures = (string, names, regex) => {
-    let object = zipObject(
-        names, captures(string, regex)
-    )
-    names.forEach((name, index) =>
-        object[name]
-            || captureErr(string, index, regex)
-    )
-    return object
+  let object = zipObject(
+    names, captures(string, regex)
+  )
+  names.forEach((name, index) =>
+    object[name]
+      || captureErr(string, index, regex)
+  )
+  return object
 }
 
 
@@ -227,7 +227,7 @@ let fromCaptures = (string, names, regex) => {
 // by apply `regex` to `string`.
 
 let captures = (string, regex) =>
-    tail(string.match(regex))
+  tail(string.match(regex))
 
 
 
@@ -247,41 +247,41 @@ import Dict exposing (Dict)
 import Time
 
 type alias Content =
-    { id : String
-    , name : String
-    , date : Time.Posix
-    , tags : List String
-    , body : String
-    }
+  { id : String
+  , name : String
+  , date : Time.Posix
+  , tags : List String
+  , body : String
+  }
 
 contentList : List Content
 contentList =
-    [ {{#each contents}}
-        Content
-            "{{this.meta.id}}"
-            "{{this.meta.title}}"
-            (Time.millisToPosix {{this.meta.date}})
-            [ {{#each this.meta.tags}}
-                "{{this}}"{{#unless @last}},{{/unless}}
-            {{/each}} ]
-            "{{this.body}}"
-        {{#unless @last}},{{/unless}}
-    {{/each}} ]
+  [ {{#each contents}}
+    Content
+      "{{this.meta.id}}"
+      "{{this.meta.title}}"
+      (Time.millisToPosix {{this.meta.date}})
+      [ {{#each this.meta.tags}}
+        "{{this}}"{{#unless @last}},{{/unless}}
+      {{/each}} ]
+      "{{this.body}}"
+    {{#unless @last}},{{/unless}}
+  {{/each}} ]
 
 contentDict : Dict String Content
 contentDict =
-    contentList
-        |> List.map (\\c -> (c.id, c))
-        |> Dict.fromList
+  contentList
+    |> List.map (\\c -> (c.id, c))
+    |> Dict.fromList
 `
 
 
 
 let generateElm = (parsedFiles) =>
-    handlebars.compile(
-      template,
-      { noEscape: true }
-    )({ contents: parsedFiles })
+  handlebars.compile(
+    template,
+    { noEscape: true }
+  )({ contents: parsedFiles })
 
 
 
@@ -295,10 +295,10 @@ let generateElm = (parsedFiles) =>
 // after it's been passed through elm-format.
 
 let formatElm = (generatedElm) =>
-    promiseFromProcess(
-        exec('elm-format', [ '--stdin' ]),
-        generatedElm
-    )
+  promiseFromProcess(
+    exec('elm-format', [ '--stdin' ]),
+    generatedElm
+  )
 
 
 
@@ -313,23 +313,23 @@ let formatElm = (generatedElm) =>
 //     { exitCode: Int, stdout: String }
 
 let promiseFromProcess = (process, stdin) => {
-    let stdout = ''
-    return new Promise((resolve, reject) => {
-        process.addListener('error', reject)
-        process.addListener('exit', (exitCode) =>
-            exitCode == 0
-                ? resolve(stdout)
-                : reject({
-                    exitCode: exitCode,
-                    stdout: stdout
-                })
-        )
-        process.stdout.on('data', (data) =>
-            stdout = stdout + data
-        )
-        process.stdin.write(stdin)
-        process.stdin.end()
-    })
+  let stdout = ''
+  return new Promise((resolve, reject) => {
+    process.addListener('error', reject)
+    process.addListener('exit', (exitCode) =>
+      exitCode == 0
+        ? resolve(stdout)
+        : reject({
+          exitCode: exitCode,
+          stdout: stdout
+        })
+    )
+    process.stdout.on('data', (data) =>
+      stdout = stdout + data
+    )
+    process.stdin.write(stdin)
+    process.stdin.end()
+  })
 }
 
 
@@ -341,9 +341,9 @@ let promiseFromProcess = (process, stdin) => {
 
 
 let writeElm = (file) => (elm) =>
-    mkdirp(path.dirname(file)).then(() =>
-        writeFile(file, elm)
-    )
+  mkdirp(path.dirname(file)).then(() =>
+    writeFile(file, elm)
+  )
 
 
 
@@ -357,43 +357,43 @@ let writeElm = (file) => (elm) =>
 // ensuring they have been defined.
 
 let env = reduce([
-        'JANDER_BUILD',
-        'JANDER_CONTENT',
-        'JANDER_GENERATED'
-    ], (env, name) => {
-          env[name] = process.env[name]
-              || throwErr(
-                'Missing environment ' +
-                'variable "' + name + '"')
-          return env
-    }, {})
+    'JANDER_BUILD',
+    'JANDER_CONTENT',
+    'JANDER_GENERATED'
+  ], (env, name) => {
+      env[name] = process.env[name]
+        || throwErr(
+        'Missing environment ' +
+        'variable "' + name + '"')
+      return env
+  }, {})
 
 
 
 readFilesFromDir(env.JANDER_CONTENT)
 
-    .then(log('Parsing content'))
-    .map(parseFile)
+  .then(log('Parsing content'))
+  .map(parseFile)
 
-    .then((content) =>
-        sortBy(
-          content,
-          (c) => -c.meta.date
-        ))
+  .then((content) =>
+    sortBy(
+      content,
+      (c) => -c.meta.date
+    ))
 
-    .then(log('Generating elm'))
-    .then(generateElm)
+  .then(log('Generating elm'))
+  .then(generateElm)
 
-    .then(log('Formatting elm'))
-    .then(formatElm)
+  .then(log('Formatting elm'))
+  .then(formatElm)
 
-    .then(log('Writing file'))
-    .then(writeElm(path.join(
-        env.JANDER_BUILD,
-        env.JANDER_GENERATED
-    )))
+  .then(log('Writing file'))
+  .then(writeElm(path.join(
+    env.JANDER_BUILD,
+    env.JANDER_GENERATED
+  )))
 
-    .catch((err) => {
-        console.error(err)
-        process.exitCode = 1
-    })
+  .catch((err) => {
+    console.error(err)
+    process.exitCode = 1
+  })
