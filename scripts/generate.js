@@ -1,27 +1,27 @@
-#!/usr/bin/env ts-node
+#!/usr/bin/env node
 
-import {execFile} from 'child_process'
-import * as handlebars from 'handlebars'
-import * as mkdirp from 'mkdirp-promise'
-import * as format from 'string-format'
-import * as promise from 'bluebird'
-import * as crypto from 'crypto'
-import * as moment from 'moment'
-import * as path from 'path'
-import * as fs from 'fs'
+let exec = require('child_process').execFile
+let handlebars = require('handlebars')
+let mkdirp = require('mkdirp-promise')
+let format = require('string-format')
+let promise = require('bluebird')
+let crypto = require('crypto')
+let moment = require('moment')
+let path = require('path')
+let fs = require('fs')
 
-import {
+let {
   zipObject,
   isEmpty,
   reduce,
   sortBy,
   range,
-  tail,
-} from 'lodash'
+  tail
+} = require('lodash')
 
-const writeFile = promise.promisify(fs.writeFile)
-const readFile = promise.promisify(fs.readFile)
-const readdir = promise.promisify(fs.readdir)
+let writeFile = promise.promisify(fs.writeFile)
+let readFile = promise.promisify(fs.readFile)
+let readdir = promise.promisify(fs.readdir)
 
 
 
@@ -35,8 +35,8 @@ const readdir = promise.promisify(fs.readdir)
 // strings (UTF-8 is assumed) of every file that's
 // an immediate child of `dir`.
 
-const readFilesFromDir = (dir) =>
-  readdir(dir, {withFileTypes: true})
+let readFilesFromDir = (dir) =>
+  readdir(dir, { withFileTypes: true })
     .then((files) => promise.all(
       files.filter(file =>
         file.isFile()
@@ -50,7 +50,7 @@ const readFilesFromDir = (dir) =>
 // This helper function allows me to throw
 // from within a ternary operator.
 
-const throwErr = (message) =>
+let throwErr = (message) =>
   (() => { throw message })()
 
 
@@ -59,7 +59,7 @@ const throwErr = (message) =>
 // and then passes the promise's `value`
 // on to the next `then()` call.
 
-const log = (message) => (value) => {
+let log = (message) => (value) => {
   console.log(message)
   return value
 }
@@ -71,7 +71,7 @@ const log = (message) => (value) => {
 // the value on to the next `then()`
 // call.
 
-const logValue = (value) => {
+let logValue = (value) => {
   console.log(value)
   return value
 }
@@ -81,7 +81,7 @@ const logValue = (value) => {
 // Returns a string of `count` number
 // of spaces.
 
-const spaces = (count) =>
+let spaces = (count) =>
   reduce(range(count),
     (acc) => acc + ' ',
   '')
@@ -91,7 +91,7 @@ const spaces = (count) =>
 // Mutates `string` so that `tab` is
 // prepended to each line.
 
-const indentLines = (string, tab) =>
+let indentLines = (string, tab) =>
   reduce(string.split('\n'),
     (acc, s) => acc + tab + s + '\n',
   '')
@@ -106,8 +106,8 @@ const indentLines = (string, tab) =>
 
 // Parses a content file.
 
-const parseFile = (file) => {
-  const parsed = fromCaptures(
+let parseFile = (file) => {
+  let parsed = fromCaptures(
     file, ['meta', 'body'],
     /^(.*)---\n(.*)$/s
   )
@@ -120,8 +120,8 @@ const parseFile = (file) => {
 
 // Parses a content's meta section.
 
-const parseMeta = (meta) => {
-  const parsed = fromCaptures(
+let parseMeta = (meta) => {
+  let parsed = fromCaptures(
     meta, ['title', 'date', 'tags'],
     /^# ([^\n]+)\n\s*([^\n]+)\n\s*(-.+)$/s
   )
@@ -135,8 +135,8 @@ const parseMeta = (meta) => {
 
 // Parses the date string into POSIX time.
 
-const parseDate = (date) => {
-  const m = moment(date)
+let parseDate = (date) => {
+  let m = moment(date)
   return m.isValid()
     ? m.valueOf()
     : throwErr('Failed to parse date '+date)
@@ -147,8 +147,8 @@ const parseDate = (date) => {
 // Generates the content's ID by hashing the
 // title and date.
 
-const parseId = (parsed) => {
-  const hash = crypto.createHash('sha256')
+let parseId = (parsed) => {
+  let hash = crypto.createHash('sha256')
   hash.update(parsed.title + parsed.date)
   return hash.digest('hex').substring(0,8)
 }
@@ -158,7 +158,7 @@ const parseId = (parsed) => {
 // Parses the tags portion of a content's
 // meta section.
 
-const parseTags = (tags) =>
+let parseTags = (tags) =>
   isEmpty(tags)
     ? throwErr('Content tags must '+
       'have at least one item')
@@ -172,7 +172,7 @@ const parseTags = (tags) =>
 // Escape the double quotes so we don't
 // break strings in the output Elm.
 
-const parseBody = (body) =>
+let parseBody = (body) =>
   body.replace(/\"/g, '\\"')
 
 
@@ -195,7 +195,7 @@ with regex...
 // Throws an error outlining what capture
 // is missing for what regex in what file.
 
-const captureErr = (file, index, regex) =>
+let captureErr = (file, index, regex) =>
   throwErr(format(
     captureErrMsg,
     index,
@@ -210,8 +210,8 @@ const captureErr = (file, index, regex) =>
 // object using the `names` list as the keys. If there aren't
 // enough captures for the names provided, an error is thrown.
 
-const fromCaptures = (string, names, regex) => {
-  const object = zipObject(
+let fromCaptures = (string, names, regex) => {
+  let object = zipObject(
     names, captures(string, regex)
   )
   names.forEach((name, index) =>
@@ -226,19 +226,8 @@ const fromCaptures = (string, names, regex) => {
 // Returns a list of the captures obtained
 // by apply `regex` to `string`.
 
-const captures = (string, regex) =>
+let captures = (string, regex) =>
   tail(string.match(regex))
-
-
-
-/*
- * Sort Content
- */
-
-
-
-const sortContent = (content) =>
-    sortBy(content, (c) => -c.meta.date)
 
 
 
@@ -288,7 +277,7 @@ contentDict =
 
 
 
-const generateElm = (parsedFiles) =>
+let generateElm = (parsedFiles) =>
   handlebars.compile(
     template,
     { noEscape: true }
@@ -305,9 +294,9 @@ const generateElm = (parsedFiles) =>
 // Returns a promise for the elm source code
 // after it's been passed through elm-format.
 
-const formatElm = (generatedElm) =>
+let formatElm = (generatedElm) =>
   promiseFromProcess(
-    execFile('elm-format', [ '--stdin' ]),
+    exec('elm-format', [ '--stdin' ]),
     generatedElm
   )
 
@@ -323,7 +312,7 @@ const formatElm = (generatedElm) =>
 //
 //     { exitCode: Int, stdout: String }
 
-const promiseFromProcess = (process, stdin) => {
+let promiseFromProcess = (process, stdin) => {
   let stdout = ''
   return new Promise((resolve, reject) => {
     process.addListener('error', reject)
@@ -351,7 +340,7 @@ const promiseFromProcess = (process, stdin) => {
 
 
 
-const writeElm = (file) => (elm) =>
+let writeElm = (file) => (elm) =>
   mkdirp(path.dirname(file)).then(() =>
     writeFile(file, elm)
   )
@@ -367,7 +356,7 @@ const writeElm = (file) => (elm) =>
 // Grab the required environment variables,
 // ensuring they have been defined.
 
-const env = reduce([
+let env = reduce([
     'JANDER_BUILD',
     'JANDER_CONTENT',
     'JANDER_GENERATED'
@@ -386,8 +375,11 @@ readFilesFromDir(env.JANDER_CONTENT)
   .then(log('Parsing content'))
   .map(parseFile)
 
-  .then(log('Sorting content'))
-  .then(sortContent)
+  .then((content) =>
+    sortBy(
+      content,
+      (c) => -c.meta.date
+    ))
 
   .then(log('Generating elm'))
   .then(generateElm)

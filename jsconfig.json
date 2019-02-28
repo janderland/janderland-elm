@@ -1,7 +1,0 @@
-{
-  "compilerOptions": {
-    "checkJs": true,
-    "target": "es2018",
-    "module": "commonjs"
-  }
-}
