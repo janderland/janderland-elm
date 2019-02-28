@@ -2,7 +2,8 @@
   "name": "janderland",
   "version": "1.0.0",
   "scripts": {
-    "jander": "scripts/jander.sh"
+    "jander": "scripts/jander.sh",
+    "migrate": "scripts/migrate.js"
   },
   "repository": {
     "type": "git",
@@ -20,6 +21,7 @@
     "lodash": "^4.17.11",
     "mkdirp-promise": "^5.0.1",
     "moment": "^2.24.0",
+    "sqlite": "^3.0.2",
     "string-format": "^2.0.0"
   }
 }
