@@ -1,4 +1,4 @@
-module Ogham exposing (Mapper, OghamChar(..), fromString)
+module Ogham exposing (fromString)
 
 
 type OghamChar
@@ -31,63 +31,52 @@ type OghamChar
     | Z
 
 
-type alias Mapper =
-    Char -> OghamChar
-
-
 fromString : String -> String
 fromString =
     String.toLower
         >> String.toList
-        >> parseChars default
+        >> parseChars
         >> List.map toChar
         >> String.fromList
 
 
-parseChars : Mapper -> List Char -> List OghamChar
-parseChars mapper list =
-    let
-        recurse =
-            parseChars mapper
-
-        sParse =
-            singleParse mapper
-    in
+parseChars : List Char -> List OghamChar
+parseChars list =
     case list of
         [] ->
             []
 
-        head1 :: dropped1 ->
-            case dropped1 of
+        head1 :: tail1 ->
+            case tail1 of
                 [] ->
-                    [ sParse head1 ]
+                    [ singleParse head1 ]
 
-                head2 :: dropped2 ->
+                head2 :: tail2 ->
                     case ( head1, head2 ) of
                         ( 'a', 'e' ) ->
-                            AE :: recurse dropped2
+                            AE :: parseChars tail2
 
                         ( 'e', 'a' ) ->
-                            EA :: recurse dropped2
+                            EA :: parseChars tail2
 
                         ( 'i', 'a' ) ->
-                            IA :: recurse dropped2
+                            IA :: parseChars tail2
 
                         ( 'n', 'g' ) ->
-                            NG :: recurse dropped2
+                            NG :: parseChars tail2
 
                         ( 'o', 'i' ) ->
-                            OI :: recurse dropped2
+                            OI :: parseChars tail2
 
                         ( 'u', 'i' ) ->
-                            UI :: recurse dropped2
+                            UI :: parseChars tail2
 
                         _ ->
-                            sParse head1 :: recurse dropped1
+                            singleParse head1 :: parseChars tail1
 
 
-singleParse : Mapper -> Char -> OghamChar
-singleParse mapper char =
+singleParse : Char -> OghamChar
+singleParse char =
     case char of
         'a' ->
             A
@@ -150,11 +139,11 @@ singleParse mapper char =
             Z
 
         _ ->
-            mapper char
+            interpreter char
 
 
-default : Mapper
-default char =
+interpreter : Char -> OghamChar
+interpreter char =
     case char of
         'j' ->
             G
