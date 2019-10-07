@@ -1,16 +1,12 @@
 module Views exposing (clampWidth, layoutFromWidth, view)
 
 import Browser
-import Contents exposing (Content, contentDict, contentList)
+import Contents exposing (Content, contentList)
 import DateFormat
-import Dict
 import Element exposing (..)
 import Element.Background as Background
 import Element.Border as Border
 import Element.Font as Font
-import Element.Input as Input
-import Html exposing (Html)
-import Markdown
 import Markdown.Block as Block exposing (Block(..), ListType(..))
 import Markdown.Config as MdConfig
 import Markdown.Inline as Inline exposing (Inline(..))
@@ -19,7 +15,6 @@ import Pages exposing (Page)
 import Route
 import State exposing (Layout(..), Model, Msg(..))
 import Time
-import Tuple
 
 
 
