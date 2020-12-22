@@ -6,16 +6,15 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/janderland/janderland-elm.git"
+    "url": "git+https://github.com/janderland/janderland.git"
   },
   "bugs": {
-    "url": "https://github.com/janderland/janderland-elm/issues"
+    "url": "https://github.com/janderland/janderland/issues"
   },
-  "homepage": "https://github.com/janderland/janderland-elm#readme",
+  "homepage": "https://github.com/janderland/janderland#readme",
   "dependencies": {
     "bluebird": "^3.7.0",
-    "elm": "^0.19.0-bugfix2",
-    "elm-format": "^0.8.2",
+    "elm-format": "^0.8.4",
     "handlebars": "^4.4.2",
     "lodash": "^4.17.15",
     "mkdirp-promise": "^5.0.1",
